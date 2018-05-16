@@ -82,7 +82,7 @@ DataInputStream fromServer = null;
         try {
             // Create a socket to connect to the server
             //Socket socket = new Socket("localhost", 8000);
-            Socket socket = new Socket("2001:610:1a0:1300:a4cd:d583:833f:ea3d", 8000);
+            Socket socket = new Socket("2001:610:1a0:1300:a4cd:d583:833f:ea3d", 8003);
             // Socket socket = new Socket("drake.Armstrong.edu", 8000);
 
             // Create an input stream to receive data from the server
