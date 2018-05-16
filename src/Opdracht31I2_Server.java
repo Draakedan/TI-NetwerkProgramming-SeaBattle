@@ -28,7 +28,7 @@ public class Opdracht31I2_Server extends Application {
             new Thread(() -> {
                 try {
                     // Create a server socket
-                    ServerSocket serverSocket = new ServerSocket(8000);
+                    ServerSocket serverSocket = new ServerSocket(8003);
                     Platform.runLater(() ->
                             ta.appendText("Server started at " + new Date() + '\n'));
                     // Listen for a connection request

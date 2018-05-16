@@ -1,6 +1,6 @@
 import javafx.application.Application;
 
-public class Client extends Application {
+public abstract class Client extends Application {
     private static int playerID;
     private Game enemyGame;
     private Game playerGame;
