@@ -1,3 +1,4 @@
+import javax.swing.*;
 import java.util.ArrayList;
 
 public class Game {
@@ -59,6 +60,12 @@ public class Game {
 
     public boolean isGame() {
         return isGame;
+    }
+
+    //het is de bedoeling dat als er op een button geklikt is, er een plaatje van een hit of een miss komt te staan
+    public void toggleButton(JButton button)
+    {
+
     }
 
 }

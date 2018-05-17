@@ -6,6 +6,9 @@ public class GUI extends JFrame {
     private static ArrayList<ArrayList<JButton>> leftPlayFieldButtons;
     private static ArrayList<ArrayList<JButton>> rightPlayFieldButtons;
 
+    private static Color water = new Color(51, 190, 212);
+    private static Color hoverWater = new Color(61,209, 232);
+
     public static void main(String[] args) {
 
         //hier word het buitenste frame gemaakt
@@ -46,25 +49,39 @@ public class GUI extends JFrame {
 //hier staan 2 codes om het speelveld te maken, deze komen uit johans oefentoest van lightsout van periode 2
         //we moeten kijken of we een aparte methode gaan schrijven om dit toe te voegen of het anders doen
 
-        JPanel leftPlayerGameField = new JPanel(new GridLayout(10,10));
+        JPanel leftPlayerGameField = new JPanel(new GridLayout(5,5));
         leftPlayField.add(leftPlayerGameField, BorderLayout.CENTER);
 
         leftPlayFieldButtons = new ArrayList<>();
-        for(int leftY = 0; leftY < 10; leftY++)
+        for(int leftY = 0; leftY < 5; leftY++)
         {
             ArrayList<JButton> leftRow = new ArrayList<>();
-            for(int leftX = 0; leftX < 10; leftX++)
+            for(int leftX = 0; leftX < 5; leftX++)
             {
                 JButton leftButton = new JButton();
+                leftButton.setBackground(water);
+                //leftButton.setBorderPainted(false);
 
-                final int finalX = leftX;
-                final int finalY = leftY;
+
+                leftButton.addMouseListener(new java.awt.event.MouseAdapter() {
+                    public void mouseEntered(java.awt.event.MouseEvent evt) {
+                        leftButton.setBackground(hoverWater);
+                    }
+
+                    public void mouseExited(java.awt.event.MouseEvent evt) {
+                        leftButton.setBackground(water);
+                    }
+                });
+
+                final int finalLeftX = leftX;
+                final int finalRightY = leftY;
 
                 leftButton.addActionListener(e ->
                 {
-
+                    System.out.println("Positie van de button:    x " + (finalLeftX + 1)  +  "  Y  " + (finalRightY + 1));
                 });
 
+                //leftButton.setEnabled(false);
                 leftPlayerGameField.add(leftButton);
                 leftRow.add(leftButton);
             }
@@ -72,23 +89,37 @@ public class GUI extends JFrame {
         }
 
 
-        JPanel rightPlayerGameField = new JPanel(new GridLayout(10,10));
+        JPanel rightPlayerGameField = new JPanel(new GridLayout(5,5));
         rightPlayField.add(rightPlayerGameField, BorderLayout.CENTER);
 
         rightPlayFieldButtons = new ArrayList<>();
-        for(int rightY = 0; rightY < 10; rightY++)
+        for(int rightY = 0; rightY < 5; rightY++)
         {
             ArrayList<JButton> rightRow = new ArrayList<>();
-            for(int rightX = 0; rightX < 10; rightX++)
+            for(int rightX = 0; rightX < 5; rightX++)
             {
                 JButton rightButton = new JButton();
+                rightButton.setBackground(water);
+                //leftButton.setBorderPainted(false);
 
-                final int finalX2 = rightX;
-                final int finalY2 = rightY;
+
+                rightButton.addMouseListener(new java.awt.event.MouseAdapter() {
+                    public void mouseEntered(java.awt.event.MouseEvent evt) {
+                        rightButton.setBackground(hoverWater);
+                    }
+
+                    public void mouseExited(java.awt.event.MouseEvent evt) {
+                        rightButton.setBackground(water);
+                    }
+                });
+
+
+                final int finalRightX = rightX;
+                final int finalRightY = rightY;
 
                 rightButton.addActionListener(e ->
                 {
-
+                    System.out.println("Positie van de button:    x " + (finalRightX + 1)  +  "  Y  " + (finalRightY + 1));
                 });
 
                 rightPlayerGameField.add(rightButton);
