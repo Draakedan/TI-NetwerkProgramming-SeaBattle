@@ -10,6 +10,19 @@ import java.util.ArrayList;
 
 public class TicTacToeClient extends JFrame implements Runnable {
 
+    //wat er nog gemaakt moet worden:
+
+    // - een getter voor welk valkje op geklikt is
+    // - een methode die een willekeurig vakje kan veranderen
+    // - een methode die het aangeklikte vakje naar de server stuurt
+    // - een methode die kijkt of er een boot geraakt is(van jezelf)
+    // - een methode die kijkt of er al ieand gewonnen heeft
+    // gaan we doen als je een boot raakt dat je dan nog een keer mag shieten(anders hier ook een methode voor)
+    // optioneel een knop voor een rematch
+    //heel veel onzin staat hier nog in van tictactoe, die kan er allemaal uit
+
+
+
 
     private static ArrayList<ArrayList<JButton>> leftPlayFieldButtons;
     private static ArrayList<ArrayList<JButton>> rightPlayFieldButtons;
@@ -25,29 +38,16 @@ public class TicTacToeClient extends JFrame implements Runnable {
     private static Color hoverWater = new Color(61,209, 232);
 
 
-
-    private boolean myTurn = false;
-    private JLabel jlblTitle = new JLabel();
     private JLabel jlblStatus = new JLabel();
-
-    private int rowSelected;
-    private int columnSelected;
 
     private DataInputStream fromServer;
     private DataOutputStream toServer;
 
-    // Continue to play?
-    private boolean continueToPlay = true;
-
     // Wait for the player to mark a cell
     private boolean waiting = true;
 
-    // Indicate if it runs as application
-    private boolean isStandAlone = false;
-
     private String host = "localhost";
 
-    /** Initialize UI */
     public TicTacToeClient(){
         JFrame frame = new JFrame("Gui oefenen Timo");
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -297,8 +297,8 @@ public class TicTacToeClient extends JFrame implements Runnable {
 
     /** Send this player's move to the server */
     private void sendMove() throws IOException {
-        toServer.writeInt(rowSelected); // Send the selected row
-        toServer.writeInt(columnSelected); // Send the selected column
+        toServer.writeInt(1);                  //rowSelected); // Send the selected row
+        toServer.writeInt(2);                  //columnSelected); // Send the selected column
     }
 
     /** Receive info from the server */

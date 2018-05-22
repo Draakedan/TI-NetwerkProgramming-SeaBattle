@@ -6,35 +6,10 @@ import java.net.Socket;
 public class SeaBattleClient {
 
 
-    private boolean myTurn = false;
-
-    // Indicate the token for the player
-    private char myToken = ' ';
-
-    // Indicate the token for the other player
-    private char otherToken = ' ';
-
-    // Create and initialize cells
-
-    // Create and initialize a title label
-    private JLabel jlblTitle = new JLabel();
-
-    // Create and initialize a status label
-    private JLabel jlblStatus = new JLabel();
-
-    // Indicate selected row and column by the current move
-    private int rowSelected;
-    private int columnSelected;
 
     // Input and output streams from/to server
     private DataInputStream fromServer;
     private DataOutputStream toServer;
-
-    // Continue to play?
-    private boolean continueToPlay = true;
-
-    // Wait for the player to mark a cell
-    private boolean waiting = true;
 
     // Indicate if it runs as application
     private boolean isStandAlone = false;

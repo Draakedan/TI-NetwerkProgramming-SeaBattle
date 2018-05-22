@@ -42,7 +42,7 @@ public class SeabattleServer extends JFrame{
                 serverTextArea.append(new Date() + ": The game can begin " + '\n');
 
                 gameLogic game = new gameLogic(player1, player2);
-                
+
                 new Thread(game).start();
             }
         }
