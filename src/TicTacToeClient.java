@@ -28,7 +28,7 @@ public class TicTacToeClient extends JFrame implements Runnable {
     private static ArrayList<ArrayList<JButton>> rightPlayFieldButtons;
 
     private static boolean isStartPressed = false;
-    private static boolean areBoatsPlaced = false;
+    private static ArrayList<JButton> boats;
     private static int boatsPlaced = 0;
 
     private static Color huidigeAchtergrond;
@@ -150,7 +150,7 @@ public class TicTacToeClient extends JFrame implements Runnable {
                             leftButton.setEnabled(false);
                             boatsPlaced++;
                             if (boatsPlaced == 5) {
-                                areBoatsPlaced = true;
+                                boats.add(leftButton);
                                 isStartPressed = false;
                                 topVeldText.setText("Let the games begin!!");
                                 leftPlayField.setEnabled(false);
@@ -406,14 +406,28 @@ public class TicTacToeClient extends JFrame implements Runnable {
 //            myTurn = true; // It is my turn
 //        }
 //    }
+    private int enemyRow;
+    private int emenyColumn;
 
     private void receiveMove() throws IOException {
         // Get the other player's move
-        int row = fromServer.readInt();
-        int column = fromServer.readInt();
+        enemyRow = fromServer.readInt();
+        emenyColumn = fromServer.readInt();
         //cell[row][column].setToken(otherToken);
     }
 
+    private boolean isHit() {
+        try {
+            receiveMove();
+            JButton target = leftPlayFieldButtons.get(emenyColumn).get(enemyRow);
+            if (boats.contains(target))
+                return true;
+            else
+                return false;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
         /** Handle mouse click on a cell */
         private class ClickListener extends MouseAdapter {
