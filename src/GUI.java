@@ -6,6 +6,13 @@ public class GUI extends JFrame {
     private static ArrayList<ArrayList<JButton>> leftPlayFieldButtons;
     private static ArrayList<ArrayList<JButton>> rightPlayFieldButtons;
 
+    private static boolean isStartPressed = false;
+    private static boolean areBoatsPlaced = false;
+    private static int boatsPlaced = 0;
+
+    private static Color huidigeAchtergrond;
+    private static JLabel topVeldText = new JLabel();
+
     private static Color water = new Color(51, 190, 212);
     private static Color hoverWater = new Color(61,209, 232);
 
@@ -21,29 +28,34 @@ public class GUI extends JFrame {
         JPanel mainPanel = new JPanel();
 
         //dit zijn de 3 panelen die op het mainPanel komen
+        Panel topField = new Panel();
         Panel leftPlayField = new Panel();
         Panel centerArea = new Panel();
         Panel rightPlayField = new Panel();
 
 
         //hier worden de 3 panelen als borderlayout gezet, zodat er meerdere dingen aan het paneel toegevoegd kunnen worden
+        topField.setLayout(new FlowLayout());
         leftPlayField.setLayout(new BorderLayout());
         centerArea.setLayout(new BorderLayout());
         rightPlayField.setLayout(new BorderLayout());
+
+        mainPanel.add(topField);
+        mainPanel.add(leftPlayField);
+        mainPanel.add(centerArea);
+        mainPanel.add(rightPlayField);
 
 
         //door middel van een gridBagLayout, kan je alle grotes aanpassen naar eigen wens,
         //dit zorgt er voor dat je precies kan bepalen waar elk paneel komt te staan, en welke grote
         //ook kan je makkelijk een paneel toevoegen zonder veel te hoeven veranderen
         GridBagLayout gridBagLayout = new GridBagLayout();
-        makeConstraints(gridBagLayout, leftPlayField, 1, 1, 0, 0, 5.0, 1.0);
-        makeConstraints(gridBagLayout, centerArea, 1, 1, 1, 0, 1.0, 1.0);
-        makeConstraints(gridBagLayout, rightPlayField, 1, 1, 2, 0, 5.0, 1.0);
+        makeConstraints(gridBagLayout, topField, 1, 1, 0, 0, 1.0, 0.1);
+        makeConstraints(gridBagLayout, leftPlayField, 1, 1, 0, 1, 5.0, 10.0);
+        makeConstraints(gridBagLayout, centerArea, 1, 1, 1, 1, 1.0, 10.0);
+        makeConstraints(gridBagLayout, rightPlayField, 1, 1, 2, 1, 5.0, 10.0);
 
-
-        //in het centerArea staat voorlopig een button met middelveld, dit is omdat nog niet duildelijk is wat we
-        //met het middenstuk willen doen
-        centerArea.add(new JButton("middenVeld"), BorderLayout.CENTER);
+        centerArea.add(new JLabel("middenVeld"));
 
 
 //hier staan 2 codes om het speelveld te maken, deze komen uit johans oefentoest van lightsout van periode 2
@@ -65,19 +77,44 @@ public class GUI extends JFrame {
 
                 leftButton.addMouseListener(new java.awt.event.MouseAdapter() {
                     public void mouseEntered(java.awt.event.MouseEvent evt) {
-                        leftButton.setBackground(hoverWater);
+                        huidigeAchtergrond = leftButton.getBackground();
+                        if (leftButton.getBackground().equals(water)) {
+                            leftButton.setBackground(hoverWater);
+                        }else{
+                            leftButton.setBackground(Color.black);
+                        }
                     }
 
                     public void mouseExited(java.awt.event.MouseEvent evt) {
-                        leftButton.setBackground(water);
+                        leftButton.setBackground(huidigeAchtergrond);
+
                     }
                 });
 
                 final int finalLeftX = leftX;
                 final int finalRightY = leftY;
 
+
+                Icon proefplaatje = new ImageIcon("ToetsStof.png");
+
                 leftButton.addActionListener(e ->
                 {
+                    if (isStartPressed)
+                    {
+                        if (boatsPlaced < 5) {
+                            leftButton.setBackground(Color.red);
+                            huidigeAchtergrond = leftButton.getBackground();
+                            leftButton.setEnabled(false);
+                            boatsPlaced++;
+                            if (boatsPlaced == 5) {
+                                areBoatsPlaced = true;
+                                isStartPressed = false;
+                                topVeldText.setText("Let the games begin!!");
+                                leftPlayField.setEnabled(false);
+                            }
+                        }
+                    }
+
                     System.out.println("Positie van de button:    x " + (finalLeftX + 1)  +  "  Y  " + (finalRightY + 1));
                 });
 
@@ -87,7 +124,6 @@ public class GUI extends JFrame {
             }
             leftPlayFieldButtons.add(leftRow);
         }
-
 
         JPanel rightPlayerGameField = new JPanel(new GridLayout(5,5));
         rightPlayField.add(rightPlayerGameField, BorderLayout.CENTER);
@@ -128,10 +164,26 @@ public class GUI extends JFrame {
             rightPlayFieldButtons.add(rightRow);
         }
 
-        //hier word alles toegevoegd en visible gezet
-        mainPanel.add(leftPlayField);
-        mainPanel.add(centerArea);
-        mainPanel.add(rightPlayField);
+        //Hier komt de code nadat het veld gemaakt is
+
+        //eerst komt er connectie shit, en dat word zeeslag gestart
+
+        topField.add(topVeldText);
+        topVeldText.setVisible(false);
+        JButton startButton = new JButton("start game");
+        topField.add(startButton);
+        startButton.addActionListener(e ->
+        {
+            startButton.setVisible(false);
+            topVeldText.setText("U mag nu 5 schepen neer zetten");
+            topVeldText.setVisible(true);
+            isStartPressed = true;
+        });
+
+
+
+
+
 
         mainPanel.setLayout(gridBagLayout);
         frame.setContentPane(mainPanel);
@@ -163,5 +215,4 @@ public class GUI extends JFrame {
         constraints.weighty = weighty;
         gridBagLayout.setConstraints(panel, constraints);
     }
-
 }
