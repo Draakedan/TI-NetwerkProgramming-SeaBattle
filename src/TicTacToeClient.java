@@ -12,9 +12,9 @@ public class TicTacToeClient extends JFrame implements Runnable {
 
     //wat er nog gemaakt moet worden:
 
-    // - een getter voor welk valkje op geklikt is
+    // - een getter voor welk valkje op geklikt is - gedaan door Anastasia Hellemons (getClickedButton)
     // - een methode die een willekeurig vakje kan veranderen
-    // - een methode die het aangeklikte vakje naar de server stuurt
+    // - een methode die het aangeklikte vakje naar de server stuurt - gedaan door Anastasia Hellemons (sendTile)
     // - een methode die kijkt of er een boot geraakt is(van jezelf)
     // - een methode die kijkt of er al ieand gewonnen heeft
     // gaan we doen als je een boot raakt dat je dan nog een keer mag shieten(anders hier ook een methode voor)
@@ -42,6 +42,12 @@ public class TicTacToeClient extends JFrame implements Runnable {
 
     private DataInputStream fromServer;
     private DataOutputStream toServer;
+    private ObjectInputStream objectFromServer;
+    private ObjectOutputStream objectToServer;
+
+
+    private JButton clickedLeft = null;
+    private JButton clickedRight = null;
 
     // Wait for the player to mark a cell
     private boolean waiting = true;
@@ -113,11 +119,18 @@ public class TicTacToeClient extends JFrame implements Runnable {
                         }else{
                             leftButton.setBackground(Color.black);
                         }
+
                     }
 
                     public void mouseExited(java.awt.event.MouseEvent evt) {
                         leftButton.setBackground(huidigeAchtergrond);
 
+                    }
+
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
+                        clickedLeft = leftButton;
+                        clickedRight = null;
                     }
                 });
 
@@ -177,6 +190,12 @@ public class TicTacToeClient extends JFrame implements Runnable {
                     public void mouseExited(java.awt.event.MouseEvent evt) {
                         rightButton.setBackground(water);
                     }
+
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
+                        clickedRight = rightButton;
+                        clickedLeft = null;
+                    }
                 });
 
 
@@ -230,6 +249,8 @@ public class TicTacToeClient extends JFrame implements Runnable {
             socket = new Socket(host, 8000);
             fromServer = new DataInputStream(socket.getInputStream());
             toServer = new DataOutputStream(socket.getOutputStream());
+            objectFromServer = new ObjectInputStream(socket.getInputStream());
+            objectToServer = new ObjectOutputStream(socket.getOutputStream());
         }
         catch (Exception ex) {
             System.err.println(ex);
@@ -295,10 +316,51 @@ public class TicTacToeClient extends JFrame implements Runnable {
         waiting = true;
     }
 
+    public void getClickedButton() {
+        if (clickedLeft != null) {
+            getClickedButton("L", 0, 0);
+        }
+        else if (clickedRight != null){
+            getClickedButton("R", 0, 0);
+        }
+        else
+            System.out.println("there aren't any clicked buttons");
+    }
+
+    public void getClickedButton(String side, int indexList, int indexButton) {
+        if (side.equals("L")) {
+            if (clickedLeft.equals(leftPlayFieldButtons.get(indexList).get(indexButton)))
+                System.out.println("the Clicked Button is on the left side of the screen on position " + indexList + "," + indexButton);
+        }
+        else if (side.equals("R")) {
+            if (clickedRight.equals(rightPlayFieldButtons.get(indexList).get(indexButton)))
+                System.out.println("the Clicked Button is on the right side of the screen on position " + indexList + "," + indexButton);
+        }
+        else if (rightPlayFieldButtons.get(indexList).size() > indexButton) {
+            getClickedButton(side, indexList, indexButton + 1);
+        }
+        else if (rightPlayFieldButtons.size() > indexList) {
+            getClickedButton(side, indexList + 1, 0);
+        }
+        else {
+            System.out.println("the button clicked in not in this list");
+        }
+    }
+
     /** Send this player's move to the server */
     private void sendMove() throws IOException {
         toServer.writeInt(1);                  //rowSelected); // Send the selected row
         toServer.writeInt(2);                  //columnSelected); // Send the selected column
+    }
+
+
+    private void sendTile() throws IOException {
+        JButton button = null;
+        if (clickedRight != null)
+            button = clickedRight;
+        else if (clickedLeft != null)
+            button = clickedLeft;
+        objectToServer.writeObject(button);
     }
 
     /** Receive info from the server */
