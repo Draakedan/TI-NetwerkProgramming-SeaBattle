@@ -8,7 +8,7 @@ import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
 
-public class TicTacToeClient extends JFrame implements Runnable {
+public class TicTacToeClient extends JFrame implements Runnable, SeabattleDataStreamConstants {
 
     //wat er nog gemaakt moet worden:
 
@@ -27,9 +27,9 @@ public class TicTacToeClient extends JFrame implements Runnable {
     private static ArrayList<ArrayList<JButton>> leftPlayFieldButtons;
     private static ArrayList<ArrayList<JButton>> rightPlayFieldButtons;
 
-    private static boolean isStartPressed = false;
-    private static ArrayList<JButton> boats;
+    private static ArrayList<JButton> boats = new ArrayList<>();
     private static int boatsPlaced = 0;
+    private static int boatsHit = 0;
 
     private static Color huidigeAchtergrond;
     private static JLabel topVeldText = new JLabel();
@@ -37,7 +37,10 @@ public class TicTacToeClient extends JFrame implements Runnable {
     private static Color water = new Color(51, 190, 212);
     private static Color hoverWater = new Color(61,209, 232);
 
+    private static int selectedRow;
+    private static int selectedColumn;
 
+    private static boolean noWinnerFound = true;
     private JLabel jlblStatus = new JLabel();
 
     private DataInputStream fromServer;
@@ -45,6 +48,12 @@ public class TicTacToeClient extends JFrame implements Runnable {
     private ObjectInputStream objectFromServer;
     private ObjectOutputStream objectToServer;
 
+    int player;
+
+    private Panel topField;
+    private Panel leftPlayField;
+    private Panel centerArea;
+    private Panel rightPlayField;
 
     private JButton clickedLeft = null;
     private JButton clickedRight = null;
@@ -64,10 +73,10 @@ public class TicTacToeClient extends JFrame implements Runnable {
         JPanel mainPanel = new JPanel();
 
         //dit zijn de 3 panelen die op het mainPanel komen
-        Panel topField = new Panel();
-        Panel leftPlayField = new Panel();
-        Panel centerArea = new Panel();
-        Panel rightPlayField = new Panel();
+        topField = new Panel();
+        leftPlayField = new Panel();
+        centerArea = new Panel();
+        rightPlayField = new Panel();
 
 
         //hier worden de 3 panelen als borderlayout gezet, zodat er meerdere dingen aan het paneel toegevoegd kunnen worden
@@ -121,12 +130,13 @@ public class TicTacToeClient extends JFrame implements Runnable {
                         }
 
                     }
-
                     public void mouseExited(java.awt.event.MouseEvent evt) {
                         leftButton.setBackground(huidigeAchtergrond);
 
                     }
 
+
+                    //kan als het goed is weg
                     @Override
                     public void mouseClicked(MouseEvent e) {
                         clickedLeft = leftButton;
@@ -135,31 +145,14 @@ public class TicTacToeClient extends JFrame implements Runnable {
                 });
 
                 final int finalLeftX = leftX;
-                final int finalRightY = leftY;
-
-
-                Icon proefplaatje = new ImageIcon("ToetsStof.png");
+                final int finalLeftY = leftY;
 
                 leftButton.addActionListener(e ->
                 {
-                    if (isStartPressed)
-                    {
-                        if (boatsPlaced < 5) {
-                            leftButton.setBackground(Color.red);
-                            huidigeAchtergrond = leftButton.getBackground();
-                            leftButton.setEnabled(false);
-                            boatsPlaced++;
-                            if (boatsPlaced == 5) {
-                                boats.add(leftButton);
-                                isStartPressed = false;
-                                topVeldText.setText("Let the games begin!!");
-                                leftPlayField.setEnabled(false);
-                            }
-                        }
-                    }
 
-                    System.out.println("Positie van de button:    x " + (finalLeftX + 1)  +  "  Y  " + (finalRightY + 1));
-                });
+                    selectedRow = finalLeftX;
+                    selectedColumn = finalLeftY;
+                    });
 
                 //leftButton.setEnabled(false);
                 leftPlayerGameField.add(leftButton);
@@ -181,7 +174,6 @@ public class TicTacToeClient extends JFrame implements Runnable {
                 rightButton.setBackground(water);
                 //leftButton.setBorderPainted(false);
 
-
                 rightButton.addMouseListener(new java.awt.event.MouseAdapter() {
                     public void mouseEntered(java.awt.event.MouseEvent evt) {
                         rightButton.setBackground(hoverWater);
@@ -190,21 +182,15 @@ public class TicTacToeClient extends JFrame implements Runnable {
                     public void mouseExited(java.awt.event.MouseEvent evt) {
                         rightButton.setBackground(water);
                     }
-
-                    @Override
-                    public void mouseClicked(MouseEvent e) {
-                        clickedRight = rightButton;
-                        clickedLeft = null;
-                    }
                 });
-
 
                 final int finalRightX = rightX;
                 final int finalRightY = rightY;
 
                 rightButton.addActionListener(e ->
                 {
-                    System.out.println("Positie van de button:    x " + (finalRightX + 1)  +  "  Y  " + (finalRightY + 1));
+                    selectedRow = finalRightX;
+                    selectedColumn = finalRightY;
                 });
 
                 rightPlayerGameField.add(rightButton);
@@ -213,33 +199,15 @@ public class TicTacToeClient extends JFrame implements Runnable {
             rightPlayFieldButtons.add(rightRow);
         }
 
-        //Hier komt de code nadat het veld gemaakt is
-
-        //eerst komt er connectie shit, en dat word zeeslag gestart
-
         topField.add(topVeldText);
-        topVeldText.setVisible(false);
-        JButton startButton = new JButton("start game");
-        topField.add(startButton);
-        startButton.addActionListener(e ->
-        {
-            startButton.setVisible(false);
-            topVeldText.setText("U mag nu 5 schepen neer zetten");
-            topVeldText.setVisible(true);
-            isStartPressed = true;
-        });
-
-
-
-
-
+        topVeldText.setText("dsfsdfsfd");
+        topVeldText.setVisible(true);
 
         mainPanel.setLayout(gridBagLayout);
         frame.setContentPane(mainPanel);
         frame.setVisible(true);
 
 
-        // Connect to the server
         connectToServer();
     }
 
@@ -255,56 +223,53 @@ public class TicTacToeClient extends JFrame implements Runnable {
         catch (Exception ex) {
             System.err.println(ex);
         }
-
-        // Control the game on a separate thread
         Thread thread = new Thread(this);
         thread.start();
     }
 
     public void run() {
-//        try {
-//            // Get notification from the server
-//            int player = fromServer.readInt();
-//
-//            // Am I player 1 or 2?
-//            if (player == PLAYER1) {
-//                myToken = 'X';
-//                otherToken = 'O';
-//                jlblTitle.setText("Player 1 with token 'X'");
-//                jlblStatus.setText("Waiting for player 2 to join");
-//
-//                // Receive startup notification from the server
-//                fromServer.readInt(); // Whatever read is ignored
-//
-//                // The other player has joined
-//                jlblStatus.setText("Player 2 has joined. I start first");
-//
-//                // It is my turn
-//                myTurn = true;
-//            }
-//            else if (player == PLAYER2) {
-//                myToken = 'O';
-//                otherToken = 'X';
-//                jlblTitle.setText("Player 2 with token 'O'");
-//                jlblStatus.setText("Waiting for player 1 to move");
-//            }
-//
-//            // Continue to play
-//            while (continueToPlay) {
-//                if (player == PLAYER1) {
-//                    waitForPlayerAction(); // Wait for player 1 to move
-//                    sendMove(); // Send the move to the server
-//                    receiveInfoFromServer(); // Receive info from the server
-//                }
-//                else if (player == PLAYER2) {
-//                    receiveInfoFromServer(); // Receive info from the server
-//                    waitForPlayerAction(); // Wait for player 2 to move
-//                    sendMove(); // Send player 2's move to the server
-//                }
-//            }
-//        }
-//        catch (Exception ex) {
-//        }
+        try {
+            player = fromServer.readInt();
+            System.out.println(player);
+
+            placeBoats();
+
+            System.out.println(player);
+
+            if (player == PLAYER1)
+            {
+                topVeldText.setText("its your turn to shoot");
+            }else if (player == PLAYER2)
+            {
+                topVeldText.setText("wait for the other player to shoot");
+            }
+
+            while (noWinnerFound)
+            {
+                if (player == PLAYER1)
+                {
+                    waitForPlayerAction();
+                    sendMoveServer();
+                    receiveFromServer();
+                }
+                else if (player == PLAYER2)
+                {
+                    receiveFromServer();
+                    waitForPlayerAction();
+                    sendMoveServer();
+                }
+            }
+
+
+
+
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     /** Wait for the player to mark a cell */
@@ -315,7 +280,7 @@ public class TicTacToeClient extends JFrame implements Runnable {
 
         waiting = true;
     }
-
+//twee keer zelfde methode naam, dus deze gaat die nooit pakken
     public void getClickedButton() {
         if (clickedLeft != null) {
             getClickedButton("L", 0, 0);
@@ -347,85 +312,82 @@ public class TicTacToeClient extends JFrame implements Runnable {
         }
     }
 
-    /** Send this player's move to the server */
-    private void sendMove() throws IOException {
-        toServer.writeInt(1);                  //rowSelected); // Send the selected row
-        toServer.writeInt(2);                  //columnSelected); // Send the selected column
-    }
-
-
-    private void sendTile() throws IOException {
-        JButton button = null;
-        if (clickedRight != null)
-            button = clickedRight;
-        else if (clickedLeft != null)
-            button = clickedLeft;
-        objectToServer.writeObject(button);
+    private void sendMoveServer() throws IOException {
+        toServer.writeInt(selectedRow);//row
+        toServer.writeInt(selectedColumn);//column
+        toServer.writeInt(boatsHit);
     }
 
     /** Receive info from the server */
-    private void receiveInfoFromServer() throws IOException {
-        // Receive game status
-        int status = fromServer.readInt();
+    private void receiveFromServer() throws IOException
+    {
+        int dataFromServer = fromServer.readInt();
+
+        //if (dataFromServer == PLAYER1_READY)
+        //{
+
+        //}
+        //else if (dataFromServer == PLAYER2_READY)
+        //{
+
+        //}
+        //else
+        if (dataFromServer == PLAYER1_BOATS_PLACED)
+        {
+
+        }
+        else if (dataFromServer == PLAYER2_BOATS_PLACED)
+        {
+
+        }
+        else if (dataFromServer == PLAYER1_WON)
+        {
+
+        }
+        else if (dataFromServer == PLAYER2_WON)
+        {
+
+        }
+        else {
+            receiveMove();
+            isHit();
+        }
     }
 
-        //if (status == PLAYER1_WON) {
-            // Player 1 won, stop playing
-          //  continueToPlay = false;
-          //  if (myToken == 'X') {
-          //      jlblStatus.setText("I won! (X)");
-          //  }
-//            else if (myToken == 'O') {
-//                jlblStatus.setText("Player 1 (X) has won!");
-//                receiveMove();
-//            }
-//        }
-//        else if (status == PLAYER2_WON) {
-//            // Player 2 won, stop playing
-//            continueToPlay = false;
-//            if (myToken == 'O') {
-//                jlblStatus.setText("I won! (O)");
-//            }
-//            else if (myToken == 'X') {
-//                jlblStatus.setText("Player 2 (O) has won!");
-//                receiveMove();
-//            }
-//        }
-//        else if (status == DRAW) {
-//            // No winner, game is over
-//            continueToPlay = false;
-//            jlblStatus.setText("Game is over, no winner!");
-//
-//            if (myToken == 'O') {
-//                receiveMove();
-//            }
-//        }
-//        else {
-//            receiveMove();
-//            jlblStatus.setText("My turn");
-//            myTurn = true; // It is my turn
-//        }
-//    }
     private int enemyRow;
     private int emenyColumn;
 
     private void receiveMove() throws IOException {
-        // Get the other player's move
         enemyRow = fromServer.readInt();
         emenyColumn = fromServer.readInt();
-        //cell[row][column].setToken(otherToken);
     }
 
     private boolean isHit() {
+        boolean isHit = false;
         try {
             receiveMove();
             JButton target = leftPlayFieldButtons.get(emenyColumn).get(enemyRow);
             if (boats.contains(target))
-                return true;
+                isHit = true;
             else
-                return false;
+                isHit = false;
         } catch (IOException e) {
             e.printStackTrace();
+        }
+        return isHit;
+    }
+
+    private void changeButton()
+    {
+        if (isHit() == true)
+        {
+            JButton target = leftPlayFieldButtons.get(emenyColumn).get(enemyRow);
+            target.setBackground(Color.orange);
+        }
+        if (isHit() == false)
+        {
+            JButton target = leftPlayFieldButtons.get(emenyColumn).get(enemyRow);
+            target.setBackground(Color.white);
         }
     }
 
@@ -439,6 +401,33 @@ public class TicTacToeClient extends JFrame implements Runnable {
                    // columnSelected = column;
                     jlblStatus.setText("Waiting for the other player to move");
                     waiting = false; // Just completed a successful move
+                }
+            }
+
+            private void placeBoats()
+            {
+                topVeldText.setText("you can now place 5 boats");
+                while (boatsPlaced < 5) {
+                    JButton button = leftPlayFieldButtons.get(selectedColumn).get(selectedRow);
+                    button.setBackground(Color.red);
+                    huidigeAchtergrond = button.getBackground();
+                    button.setEnabled(false);
+                    boatsPlaced++;
+                    if (boatsPlaced == 5) {
+                        boats.add(button);
+                        topVeldText.setText("Let the games begin!!");
+                        leftPlayField.setEnabled(false);
+                        try {
+                            if (player == PLAYER1) {
+                                toServer.writeInt(PLAYER1_BOATS_PLACED);
+                            }else if (player == PLAYER2)
+                            {
+                                toServer.writeInt(PLAYER2_BOATS_PLACED);
+                            }
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
                 }
             }
 

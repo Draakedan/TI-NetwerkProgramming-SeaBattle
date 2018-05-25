@@ -51,7 +51,7 @@ public class SeabattleServer extends JFrame{
         }
     }
 
-    class gameLogic implements Runnable
+    class gameLogic implements Runnable, SeabattleDataStreamConstants
     {
         private Socket player1;
         private Socket player2;
@@ -60,6 +60,8 @@ public class SeabattleServer extends JFrame{
         private DataOutputStream toPlayer1;
         private DataInputStream fromPlayer2;
         private DataOutputStream toPlayer2;
+
+        private int boatsHit = 0;
 
         public gameLogic(Socket player1, Socket player2)
         {
@@ -70,27 +72,79 @@ public class SeabattleServer extends JFrame{
         @Override
         public void run() {
             try {
-            DataInputStream fromPlayer1 = new DataInputStream(player1.getInputStream());
-            DataOutputStream toPlayer1 = new DataOutputStream(player1.getOutputStream());
-            DataInputStream fromPlayer2 = new DataInputStream(player2.getInputStream());
-            DataOutputStream toPlayer2 = new DataOutputStream(player2.getOutputStream());
-
-            //rest of the game code here
-
-                // - code to notify if both players have 5 ships on the field
-                // - code to let player 1 take first shot
+                fromPlayer1 = new DataInputStream(player1.getInputStream());
+                toPlayer1 = new DataOutputStream(player1.getOutputStream());
+                fromPlayer2 = new DataInputStream(player2.getInputStream());
+                toPlayer2 = new DataOutputStream(player2.getOutputStream());
 
 
-                //while true loop of sending data
+                toPlayer1.writeInt(PLAYER1);
+                toPlayer2.writeInt(PLAYER2);
 
 
 
+                if (fromPlayer1.readInt() == PLAYER1_BOATS_PLACED && fromPlayer2.readInt() == PLAYER2_BOATS_PLACED)
+                {
+                    System.out.println("HIJ KOMT IN DE WHILE TRUE LOOP");
+                    while (true) {
+                        int row = fromPlayer1.readInt();
+                        int column = fromPlayer1.readInt();
+                        boatsHit = fromPlayer1.readInt();
 
-            }
-            catch(IOException ex) {
+                        if (isThereAWinner()) {
+                            toPlayer1.writeInt(PLAYER1_WON);
+                            toPlayer2.writeInt(PLAYER1_WON);
+                            sendMove(toPlayer2, row, column);
+                            break;
+                        } else {
+                            sendMove(toPlayer2, row, column);
+                        }
+
+
+                        row = fromPlayer2.readInt();
+                        column = fromPlayer2.readInt();
+                        boatsHit = fromPlayer2.readInt();
+
+                        if (isThereAWinner()) {
+                            toPlayer1.writeInt(PLAYER2_WON);
+                            toPlayer2.writeInt(PLAYER2_WON);
+                            sendMove(toPlayer1, row, column);
+                            break;
+                        } else {
+                            sendMove(toPlayer1, row, column);
+                        }
+                    }
+                }
+
+
+            } catch (IOException ex) {
                 System.err.println(ex);
             }
         }
+
+            private boolean isThereAWinner()
+            {
+                boolean aWinner;
+                if (boatsHit == 5)
+                {
+                    aWinner = true;
+                }else
+                {
+                    aWinner = false;
+                }
+                return aWinner;
+            }
+
+            private void sendMove(DataOutputStream outputStream, int row, int column)
+            {
+                try {
+                    outputStream.writeInt(row);
+                    outputStream.writeInt(column);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        }
     }
-}
 
