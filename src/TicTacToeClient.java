@@ -10,20 +10,6 @@ import java.util.ArrayList;
 
 public class TicTacToeClient extends JFrame implements Runnable, SeabattleDataStreamConstants {
 
-    //wat er nog gemaakt moet worden:
-
-    // - een getter voor welk valkje op geklikt is - gedaan door Anastasia Hellemons (getClickedButton)
-    // - een methode die een willekeurig vakje kan veranderen
-    // - een methode die het aangeklikte vakje naar de server stuurt - gedaan door Anastasia Hellemons (sendTile)
-    // - een methode die kijkt of er een boot geraakt is(van jezelf)
-    // - een methode die kijkt of er al ieand gewonnen heeft
-    // gaan we doen als je een boot raakt dat je dan nog een keer mag shieten(anders hier ook een methode voor)
-    // optioneel een knop voor een rematch
-    //heel veel onzin staat hier nog in van tictactoe, die kan er allemaal uit
-
-
-
-
     private static ArrayList<ArrayList<JButton>> leftPlayFieldButtons;
     private static ArrayList<ArrayList<JButton>> rightPlayFieldButtons;
 
@@ -31,22 +17,21 @@ public class TicTacToeClient extends JFrame implements Runnable, SeabattleDataSt
     private static int boatsPlaced = 0;
     private static int boatsHit = 0;
 
+    private static boolean buttonclicked = false;
+
     private static Color huidigeAchtergrond;
     private static JLabel topVeldText = new JLabel();
 
     private static Color water = new Color(51, 190, 212);
     private static Color hoverWater = new Color(61,209, 232);
 
-    private static int selectedRow;
-    private static int selectedColumn;
+    private static int selectedRow = 100;
+    private static int selectedColumn = 100;
 
     private static boolean noWinnerFound = true;
-    private JLabel jlblStatus = new JLabel();
 
     private DataInputStream fromServer;
     private DataOutputStream toServer;
-    private ObjectInputStream objectFromServer;
-    private ObjectOutputStream objectToServer;
 
     int player;
 
@@ -54,12 +39,6 @@ public class TicTacToeClient extends JFrame implements Runnable, SeabattleDataSt
     private Panel leftPlayField;
     private Panel centerArea;
     private Panel rightPlayField;
-
-    private JButton clickedLeft = null;
-    private JButton clickedRight = null;
-
-    // Wait for the player to mark a cell
-    private boolean waiting = true;
 
     private String host = "localhost";
 
@@ -134,14 +113,6 @@ public class TicTacToeClient extends JFrame implements Runnable, SeabattleDataSt
                         leftButton.setBackground(huidigeAchtergrond);
 
                     }
-
-
-                    //kan als het goed is weg
-                    @Override
-                    public void mouseClicked(MouseEvent e) {
-                        clickedLeft = leftButton;
-                        clickedRight = null;
-                    }
                 });
 
                 final int finalLeftX = leftX;
@@ -149,12 +120,13 @@ public class TicTacToeClient extends JFrame implements Runnable, SeabattleDataSt
 
                 leftButton.addActionListener(e ->
                 {
-
                     selectedRow = finalLeftX;
                     selectedColumn = finalLeftY;
+                    buttonclicked = true;
+                    //leftButton.setEnabled(false);
                     });
 
-                //leftButton.setEnabled(false);
+
                 leftPlayerGameField.add(leftButton);
                 leftRow.add(leftButton);
             }
@@ -163,6 +135,7 @@ public class TicTacToeClient extends JFrame implements Runnable, SeabattleDataSt
 
         JPanel rightPlayerGameField = new JPanel(new GridLayout(5,5));
         rightPlayField.add(rightPlayerGameField, BorderLayout.CENTER);
+        rightPlayField.setEnabled(false);
 
         rightPlayFieldButtons = new ArrayList<>();
         for(int rightY = 0; rightY < 5; rightY++)
@@ -176,11 +149,17 @@ public class TicTacToeClient extends JFrame implements Runnable, SeabattleDataSt
 
                 rightButton.addMouseListener(new java.awt.event.MouseAdapter() {
                     public void mouseEntered(java.awt.event.MouseEvent evt) {
-                        rightButton.setBackground(hoverWater);
-                    }
+                        huidigeAchtergrond = rightButton.getBackground();
+                        if (rightButton.getBackground().equals(water)) {
+                            rightButton.setBackground(hoverWater);
+                        }else{
+                            rightButton.setBackground(Color.black);
+                        }
 
+                    }
                     public void mouseExited(java.awt.event.MouseEvent evt) {
-                        rightButton.setBackground(water);
+                        rightButton.setBackground(huidigeAchtergrond);
+
                     }
                 });
 
@@ -191,7 +170,10 @@ public class TicTacToeClient extends JFrame implements Runnable, SeabattleDataSt
                 {
                     selectedRow = finalRightX;
                     selectedColumn = finalRightY;
+                    buttonclicked = true;
+                    //rightButton.setEnabled(false);
                 });
+
 
                 rightPlayerGameField.add(rightButton);
                 rightRow.add(rightButton);
@@ -200,7 +182,7 @@ public class TicTacToeClient extends JFrame implements Runnable, SeabattleDataSt
         }
 
         topField.add(topVeldText);
-        topVeldText.setText("dsfsdfsfd");
+        topVeldText.setText("Wait for the other player to connect to the server");
         topVeldText.setVisible(true);
 
         mainPanel.setLayout(gridBagLayout);
@@ -217,11 +199,9 @@ public class TicTacToeClient extends JFrame implements Runnable, SeabattleDataSt
             socket = new Socket(host, 8000);
             fromServer = new DataInputStream(socket.getInputStream());
             toServer = new DataOutputStream(socket.getOutputStream());
-            objectFromServer = new ObjectInputStream(socket.getInputStream());
-            objectToServer = new ObjectOutputStream(socket.getOutputStream());
         }
         catch (Exception ex) {
-            System.err.println(ex);
+            ex.printStackTrace();
         }
         Thread thread = new Thread(this);
         thread.start();
@@ -230,40 +210,42 @@ public class TicTacToeClient extends JFrame implements Runnable, SeabattleDataSt
     public void run() {
         try {
             player = fromServer.readInt();
-            System.out.println(player);
+            System.out.println("I am player:" + player);
 
             placeBoats();
 
-            System.out.println(player);
-
-            if (player == PLAYER1)
-            {
-                topVeldText.setText("its your turn to shoot");
-            }else if (player == PLAYER2)
-            {
-                topVeldText.setText("wait for the other player to shoot");
-            }
-
             while (noWinnerFound)
             {
+                System.out.println("we are now in the while true loop, where player1 and player 2 make their moves");
+
                 if (player == PLAYER1)
                 {
+                                topVeldText.setText("its your turn to shoot");
+                                System.out.println("in de noWinnerFound gaat nu de waitforPlayerAction from player 1");
+                    rightPlayField.setEnabled(true);
                     waitForPlayerAction();
+                    rightPlayField.setEnabled(false);
+                                System.out.println("in de noWinnerFound gaat nu de sendMoveServer from player 1");
                     sendMoveServer();
+                                topVeldText.setText("wait for the other player to shoot");
+                                System.out.println("in de noWinnerFound gaat nu receiveFromServer from player 1");
                     receiveFromServer();
                 }
                 else if (player == PLAYER2)
                 {
+                                System.out.println("in de noWinnerFound gaat nu receiveFromServer from player 2");
                     receiveFromServer();
+                                topVeldText.setText("its your turn to shoot");
+                                System.out.println("in de noWinnerFound gaat nu de waitforPlayerAction from player 2");
+                    rightPlayField.setEnabled(true);
                     waitForPlayerAction();
+                    rightPlayField.setEnabled(false);
+
+                                System.out.println("in de noWinnerFound gaat nu de sendMoveServer from player 2");
                     sendMoveServer();
+                                topVeldText.setText("wait for the other player to shoot");
                 }
             }
-
-
-
-
-
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -272,105 +254,75 @@ public class TicTacToeClient extends JFrame implements Runnable, SeabattleDataSt
         }
     }
 
-    /** Wait for the player to mark a cell */
     private void waitForPlayerAction() throws InterruptedException {
-        while (waiting) {
+        System.out.println("we are now waiting for the player to press a button");
+
+        while (buttonclicked == false) {
             Thread.sleep(100);
         }
-
-        waiting = true;
-    }
-//twee keer zelfde methode naam, dus deze gaat die nooit pakken
-    public void getClickedButton() {
-        if (clickedLeft != null) {
-            getClickedButton("L", 0, 0);
-        }
-        else if (clickedRight != null){
-            getClickedButton("R", 0, 0);
-        }
-        else
-            System.out.println("there aren't any clicked buttons");
-    }
-
-    public void getClickedButton(String side, int indexList, int indexButton) {
-        if (side.equals("L")) {
-            if (clickedLeft.equals(leftPlayFieldButtons.get(indexList).get(indexButton)))
-                System.out.println("the Clicked Button is on the left side of the screen on position " + indexList + "," + indexButton);
-        }
-        else if (side.equals("R")) {
-            if (clickedRight.equals(rightPlayFieldButtons.get(indexList).get(indexButton)))
-                System.out.println("the Clicked Button is on the right side of the screen on position " + indexList + "," + indexButton);
-        }
-        else if (rightPlayFieldButtons.get(indexList).size() > indexButton) {
-            getClickedButton(side, indexList, indexButton + 1);
-        }
-        else if (rightPlayFieldButtons.size() > indexList) {
-            getClickedButton(side, indexList + 1, 0);
-        }
-        else {
-            System.out.println("the button clicked in not in this list");
-        }
+        buttonclicked = false;
     }
 
     private void sendMoveServer() throws IOException {
         toServer.writeInt(selectedRow);//row
         toServer.writeInt(selectedColumn);//column
         toServer.writeInt(boatsHit);
+        System.out.println("the move send to the server is:");
+        System.out.println("row: " + selectedRow);
+        System.out.println("column: " + selectedColumn);
+        System.out.println("boats hit:" + boatsHit);
     }
 
-    /** Receive info from the server */
     private void receiveFromServer() throws IOException
     {
-        int dataFromServer = fromServer.readInt();
-
-        //if (dataFromServer == PLAYER1_READY)
-        //{
-
+//        int dataFromServer = fromServer.readInt();
+//        System.out.println("the int received from the server is:" + dataFromServer);
+//
+//        if (dataFromServer == PLAYER1_WON)
+//        {
+//            if (player == PLAYER1)
+//            topVeldText.setText("U heeft gewonnen!!!!");
+//            if (player == PLAYER2)
+//                topVeldText.setText("Helaas de andere speler heeft gewonnen :(");
+//        }
+//        else if (dataFromServer == PLAYER2_WON)
+//        {
+//            if (player == PLAYER1)
+//                topVeldText.setText("Helaas de andere speler heeft gewonnen");
+//            if (player == PLAYER2)
+//                topVeldText.setText("U heeft gewonnen!!!!");
+//
+//        }
+//        else {
+            changeButton();
         //}
-        //else if (dataFromServer == PLAYER2_READY)
-        //{
-
-        //}
-        //else
-        if (dataFromServer == PLAYER1_BOATS_PLACED)
-        {
-
-        }
-        else if (dataFromServer == PLAYER2_BOATS_PLACED)
-        {
-
-        }
-        else if (dataFromServer == PLAYER1_WON)
-        {
-
-        }
-        else if (dataFromServer == PLAYER2_WON)
-        {
-
-        }
-        else {
-            receiveMove();
-            isHit();
-        }
     }
 
     private int enemyRow;
-    private int emenyColumn;
+    private int enemyColumn;
 
     private void receiveMove() throws IOException {
         enemyRow = fromServer.readInt();
-        emenyColumn = fromServer.readInt();
+        enemyColumn = fromServer.readInt();
+        System.out.println("the move received from the server is:");
+        System.out.println("row: " + enemyRow);
+        System.out.println("column: " + enemyColumn);
     }
 
     private boolean isHit() {
+        System.out.println("er word nu gekeken of er een boot geraakt is");
         boolean isHit = false;
         try {
             receiveMove();
-            JButton target = leftPlayFieldButtons.get(emenyColumn).get(enemyRow);
-            if (boats.contains(target))
+            JButton target = leftPlayFieldButtons.get(enemyColumn).get(enemyRow);
+            if (boats.contains(target)) {
                 isHit = true;
-            else
+                System.out.println("er is een boot geraakt");
+            }
+            else {
                 isHit = false;
+                System.out.println("er is geen boot geraakt");
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -379,57 +331,50 @@ public class TicTacToeClient extends JFrame implements Runnable, SeabattleDataSt
 
     private void changeButton()
     {
+        System.out.println("als er een button geraakt is word de knop van kleur veranderd");
         if (isHit() == true)
         {
-            JButton target = leftPlayFieldButtons.get(emenyColumn).get(enemyRow);
+            JButton target = leftPlayFieldButtons.get(enemyColumn).get(enemyRow);
             target.setBackground(Color.orange);
         }
         if (isHit() == false)
         {
-            JButton target = leftPlayFieldButtons.get(emenyColumn).get(enemyRow);
+            JButton target = leftPlayFieldButtons.get(enemyColumn).get(enemyRow);
             target.setBackground(Color.white);
         }
     }
-
-        /** Handle mouse click on a cell */
-        private class ClickListener extends MouseAdapter {
-            public void mouseClicked(MouseEvent e) {
-                // If cell is not occupied and the player has the turn
-                //if ((token == ' ') && myTurn) {
-                   // myTurn = false;
-                   // rowSelected = row;
-                   // columnSelected = column;
-                    jlblStatus.setText("Waiting for the other player to move");
-                    waiting = false; // Just completed a successful move
-                }
-            }
 
             private void placeBoats()
             {
                 topVeldText.setText("you can now place 5 boats");
                 while (boatsPlaced < 5) {
-                    JButton button = leftPlayFieldButtons.get(selectedColumn).get(selectedRow);
-                    button.setBackground(Color.red);
-                    huidigeAchtergrond = button.getBackground();
-                    button.setEnabled(false);
-                    boatsPlaced++;
-                    if (boatsPlaced == 5) {
-                        boats.add(button);
-                        topVeldText.setText("Let the games begin!!");
-                        leftPlayField.setEnabled(false);
-                        try {
-                            if (player == PLAYER1) {
-                                toServer.writeInt(PLAYER1_BOATS_PLACED);
-                            }else if (player == PLAYER2)
-                            {
-                                toServer.writeInt(PLAYER2_BOATS_PLACED);
+                    if (buttonclicked == true) {
+                        System.out.println("buttonckicked is nu true!!!!");
+                        JButton button = leftPlayFieldButtons.get(selectedColumn).get(selectedRow);
+                        button.setBackground(Color.red);
+                        huidigeAchtergrond = button.getBackground();
+                        button.setEnabled(false);
+                        boatsPlaced++;
+                        if (boatsPlaced == 5) {
+                            boats.add(button);
+                            topVeldText.setText("Let the games begin!!");
+                            leftPlayField.setEnabled(false);
+                            try {
+                                if (player == PLAYER1) {
+                                    toServer.writeInt(PLAYER1_BOATS_PLACED);
+                                } else if (player == PLAYER2) {
+                                    toServer.writeInt(PLAYER2_BOATS_PLACED);
+                                }
+
+                            } catch (IOException e) {
+                                e.printStackTrace();
                             }
-                        } catch (IOException e) {
-                            e.printStackTrace();
                         }
+                        buttonclicked = false;
                     }
                 }
             }
+
 
     /**
      * Generate constraints for Swing components

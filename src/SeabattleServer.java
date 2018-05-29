@@ -9,13 +9,15 @@ import java.util.Date;
 
 public class SeabattleServer extends JFrame{
 
+    JTextArea serverTextArea;
+
     public static void main(String[] args) {
         SeabattleServer seabattleServer = new SeabattleServer();
     }
 
     public SeabattleServer()
     {
-        JTextArea serverTextArea = new JTextArea();
+        serverTextArea = new JTextArea();
         JScrollPane scrollPane = new JScrollPane(serverTextArea);
         add(scrollPane, BorderLayout.CENTER);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -47,7 +49,7 @@ public class SeabattleServer extends JFrame{
             }
         }
         catch(IOException ex) {
-            System.err.println(ex);
+            ex.printStackTrace();
         }
     }
 
@@ -80,24 +82,34 @@ public class SeabattleServer extends JFrame{
 
                 toPlayer1.writeInt(PLAYER1);
                 toPlayer2.writeInt(PLAYER2);
+                serverTextArea.append("wrote to player1 and player2 what players they are" + '\n');
 
 
+                int boatsplacedfromplayer1 = fromPlayer1.readInt();
+                int boatsplacedfromplayer2 = fromPlayer2.readInt();
+                serverTextArea.append("boats placed from player1: " + boatsplacedfromplayer1+ '\n');
+                serverTextArea.append("boats placed from player2: " + boatsplacedfromplayer2+ '\n');
 
-                if (fromPlayer1.readInt() == PLAYER1_BOATS_PLACED && fromPlayer2.readInt() == PLAYER2_BOATS_PLACED)
+                if (boatsplacedfromplayer1 == PLAYER1_BOATS_PLACED && boatsplacedfromplayer2 == PLAYER2_BOATS_PLACED)
                 {
-                    System.out.println("HIJ KOMT IN DE WHILE TRUE LOOP");
                     while (true) {
                         int row = fromPlayer1.readInt();
                         int column = fromPlayer1.readInt();
                         boatsHit = fromPlayer1.readInt();
 
+                        serverTextArea.append("row from player1: " + row+ '\n');
+                        serverTextArea.append("column from player1: " + column+ '\n');
+                        serverTextArea.append("boats hit from player1: " + boatsHit+ '\n');
+
                         if (isThereAWinner()) {
+                            serverTextArea.append("is there a winner yet? : " + isThereAWinner()+ '\n');
                             toPlayer1.writeInt(PLAYER1_WON);
                             toPlayer2.writeInt(PLAYER1_WON);
                             sendMove(toPlayer2, row, column);
                             break;
                         } else {
                             sendMove(toPlayer2, row, column);
+                            serverTextArea.append("move send to player2:  row:" + row + " column: " + column+ '\n');
                         }
 
 
@@ -105,20 +117,26 @@ public class SeabattleServer extends JFrame{
                         column = fromPlayer2.readInt();
                         boatsHit = fromPlayer2.readInt();
 
+                        serverTextArea.append("row from player2: " + row+ '\n');
+                        serverTextArea.append("column from player2: " + column+ '\n');
+                        serverTextArea.append("boats hit from player2: " + boatsHit+ '\n');
+
                         if (isThereAWinner()) {
+                            serverTextArea.append("is there a winner yet? : " + isThereAWinner()+ '\n');
                             toPlayer1.writeInt(PLAYER2_WON);
                             toPlayer2.writeInt(PLAYER2_WON);
                             sendMove(toPlayer1, row, column);
                             break;
                         } else {
                             sendMove(toPlayer1, row, column);
+                            serverTextArea.append("move send to player1:  row:" + row + " column: " + column+ '\n');
                         }
                     }
                 }
 
 
             } catch (IOException ex) {
-                System.err.println(ex);
+                ex.printStackTrace();
             }
         }
 
