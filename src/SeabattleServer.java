@@ -92,6 +92,8 @@ public class SeabattleServer extends JFrame{
 
                 if (boatsplacedfromplayer1 == PLAYER1_BOATS_PLACED && boatsplacedfromplayer2 == PLAYER2_BOATS_PLACED)
                 {
+                    toPlayer1.writeInt(START_GAME);
+                    toPlayer2.writeInt(START_GAME);
                     while (true) {
                         int row = fromPlayer1.readInt();
                         int column = fromPlayer1.readInt();

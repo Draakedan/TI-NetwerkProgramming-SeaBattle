@@ -11,4 +11,6 @@ public interface SeabattleDataStreamConstants {
     public static int PLAYER1_WON = 555;
     public static int PLAYER2_WON = 666;
 
+    public static int START_GAME = 777;
+
 }
