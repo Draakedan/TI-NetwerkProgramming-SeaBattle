@@ -18,6 +18,7 @@ public class TicTacToeClient extends JFrame implements Runnable, SeabattleDataSt
     private static int boatsHit = 0;
 
     private static boolean buttonclicked = false;
+    private static boolean placingBoats = false;
 
     private static Color huidigeAchtergrond;
     private static JLabel topVeldText = new JLabel();
@@ -135,7 +136,7 @@ public class TicTacToeClient extends JFrame implements Runnable, SeabattleDataSt
 
         JPanel rightPlayerGameField = new JPanel(new GridLayout(5,5));
         rightPlayField.add(rightPlayerGameField, BorderLayout.CENTER);
-        rightPlayField.setEnabled(false);
+        //rightPlayField.setEnabled(false);
 
         rightPlayFieldButtons = new ArrayList<>();
         for(int rightY = 0; rightY < 5; rightY++)
@@ -344,36 +345,35 @@ public class TicTacToeClient extends JFrame implements Runnable, SeabattleDataSt
         }
     }
 
-            private void placeBoats()
-            {
-                topVeldText.setText("you can now place 5 boats");
-                while (boatsPlaced < 5) {
-                    if (buttonclicked == true) {
-                        System.out.println("buttonckicked is nu true!!!!");
-                        JButton button = leftPlayFieldButtons.get(selectedColumn).get(selectedRow);
-                        button.setBackground(Color.red);
-                        huidigeAchtergrond = button.getBackground();
-                        button.setEnabled(false);
-                        boatsPlaced++;
-                        if (boatsPlaced == 5) {
-                            boats.add(button);
-                            topVeldText.setText("Let the games begin!!");
-                            leftPlayField.setEnabled(false);
-                            try {
-                                if (player == PLAYER1) {
-                                    toServer.writeInt(PLAYER1_BOATS_PLACED);
-                                } else if (player == PLAYER2) {
-                                    toServer.writeInt(PLAYER2_BOATS_PLACED);
-                                }
-
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                        buttonclicked = false;
+    private void placeBoats()
+    {
+        topVeldText.setText("you can now place 5 boats");
+        while (boatsPlaced < 5) {
+            JButton button = leftPlayFieldButtons.get(selectedColumn).get(selectedRow);
+            button.setBackground(Color.red);
+            huidigeAchtergrond = button.getBackground();
+            button.setEnabled(false);
+            boatsPlaced++;
+            if (boatsPlaced == 5) {
+                boats.add(button);
+                topVeldText.setText("Let the games begin!!");
+                leftPlayField.setEnabled(false);
+                try {
+                    if (player == PLAYER1) {
+                        toServer.writeInt(PLAYER1_BOATS_PLACED);
+                    }else if (player == PLAYER2)
+                    {
+                        toServer.writeInt(PLAYER2_BOATS_PLACED);
                     }
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             }
+        }
+    }
+
+
+
 
 
     /**
