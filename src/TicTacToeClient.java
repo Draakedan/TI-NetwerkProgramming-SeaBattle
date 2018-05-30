@@ -27,13 +27,9 @@ public class TicTacToeClient extends JFrame implements Runnable, SeabattleDataSt
 
     private static Color water = new Color(51, 190, 212);
     private static Color hoverWater = new Color(61,209, 232);
-    private static Color hitmisWater = new Color(4, 0, 255);
-    private static Color boathitColor = new Color(232, 130, 181);
 
     private static int selectedRow = 0;
     private static int selectedColumn = 0;
-    private static JButton lastClickedJButton;
-
 
     private static boolean noWinnerFound = true;
 
@@ -200,11 +196,6 @@ public class TicTacToeClient extends JFrame implements Runnable, SeabattleDataSt
                     selectedRow = finalRightX;
                     selectedColumn = finalRightY;
                     buttonclicked = true;
-                    rightButton.setBackground(Color.white);
-                    rightButton.setEnabled(false);
-                    lastClickedJButton = rightPlayFieldButtons.get(selectedColumn).get(selectedRow);
-                    //huidigeAchtergrond = rightButton.getBackground();
-
                     //rightButton.setEnabled(false);
                 });
 
@@ -239,7 +230,7 @@ public class TicTacToeClient extends JFrame implements Runnable, SeabattleDataSt
     private void connectToServer() {
         try {
             Socket socket;
-            socket = new Socket("2001:610:1a0:1300:99f2:46f4:e0b1:d5d1", 8000);
+            socket = new Socket(host, 8000);
             fromServer = new DataInputStream(socket.getInputStream());
             toServer = new DataOutputStream(socket.getOutputStream());
         }
@@ -256,10 +247,9 @@ public class TicTacToeClient extends JFrame implements Runnable, SeabattleDataSt
 
             player = fromServer.readInt();
             System.out.println("the server send me what player i am, and i am player:" + player);
+
             int canTheGameStart = fromServer.readInt();
-            
             if (canTheGameStart == START_GAME) {
-                leftPlayField.setEnabled(false);
                 System.out.println("both players have succesfully placed their boats:");
                 while (noWinnerFound) {
                     System.out.println("we have now entered the while there is no winner found loop");
@@ -346,11 +336,9 @@ public class TicTacToeClient extends JFrame implements Runnable, SeabattleDataSt
             receiveMove();
             JButton target = leftPlayFieldButtons.get(enemyColumn).get(enemyRow);
             if (boats.contains(target)) {
-                lastClickedJButton.setBackground(boathitColor);
                 isHit = true;
             }
             else {
-                lastClickedJButton.setBackground(hitmisWater);
                 isHit = false;
             }
         } catch (IOException e) {
