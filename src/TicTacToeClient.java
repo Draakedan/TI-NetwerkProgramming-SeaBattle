@@ -342,14 +342,12 @@ public class TicTacToeClient extends JFrame implements Runnable, SeabattleDataSt
         try {
             receiveMove();
             JButton target = leftPlayFieldButtons.get(enemyColumn).get(enemyRow);
-            JButton button = rightPlayFieldButtons.get(selectedColumn).get(selectedRow);
+
             if (boats.contains(target)) {
                 isHit = true;
-                button.setBackground(boathitColor);
             }
             else {
                 isHit = false;
-                button.setBackground(hitmisWater);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -357,21 +355,26 @@ public class TicTacToeClient extends JFrame implements Runnable, SeabattleDataSt
         return isHit;
     }
 
+
     private void changeButton()
     {
         System.out.println("now entering changeButton()");
         System.out.println("we are checking if isHit() is true of false");
+
         boolean isThereABoatHit = isHit();
+        JButton button = rightPlayFieldButtons.get(selectedColumn).get(selectedRow);
+        JButton target = leftPlayFieldButtons.get(enemyColumn).get(enemyRow);
         if (isThereABoatHit == true)
         {
             System.out.println("isHit() == true");
-            JButton target = leftPlayFieldButtons.get(enemyColumn).get(enemyRow);
+
+            button.setBackground(boathitColor);
             target.setBackground(Color.orange);
         }
         if (isThereABoatHit == false)
         {
             System.out.println("isHit() == false");
-            JButton target = leftPlayFieldButtons.get(enemyColumn).get(enemyRow);
+            button.setBackground(hitmisWater);
             target.setBackground(Color.white);
         }
         System.out.println("now exiting changeButton()");
