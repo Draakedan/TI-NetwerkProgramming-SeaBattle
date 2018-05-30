@@ -189,11 +189,6 @@ public class TicTacToeClient extends JFrame implements Runnable, SeabattleDataSt
                     }
                     public void mouseExited(java.awt.event.MouseEvent evt) {
                         rightButton.setBackground(huidigeAchtergrond);
-                        rightButton.setBackground(Color.white);
-                        rightButton.setEnabled(false);
-                        lastClickedJButton = rightPlayFieldButtons.get(selectedColumn).get(selectedRow);
-                        //huidigeAchtergrond = rightButton.getBackground();
-
                     }
                 });
 
@@ -205,6 +200,11 @@ public class TicTacToeClient extends JFrame implements Runnable, SeabattleDataSt
                     selectedRow = finalRightX;
                     selectedColumn = finalRightY;
                     buttonclicked = true;
+                    rightButton.setBackground(Color.white);
+                    rightButton.setEnabled(false);
+                    lastClickedJButton = rightPlayFieldButtons.get(selectedColumn).get(selectedRow);
+                    
+                    //huidigeAchtergrond = rightButton.getBackground();
                     //rightButton.setEnabled(false);
                 });
 
