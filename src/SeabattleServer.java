@@ -74,6 +74,7 @@ public class SeabattleServer extends JFrame{
         @Override
         public void run() {
             try {
+                serverTextArea.append("now entering the run() code" + '\n');
                 fromPlayer1 = new DataInputStream(player1.getInputStream());
                 toPlayer1 = new DataOutputStream(player1.getOutputStream());
                 fromPlayer2 = new DataInputStream(player2.getInputStream());
@@ -82,36 +83,40 @@ public class SeabattleServer extends JFrame{
 
                 toPlayer1.writeInt(PLAYER1);
                 toPlayer2.writeInt(PLAYER2);
-                serverTextArea.append("wrote to player1 and player2 what players they are" + '\n');
+                serverTextArea.append("succesfully send to  player1 and player2 what players they are" + '\n');
 
 
                 int boatsplacedfromplayer1 = fromPlayer1.readInt();
                 int boatsplacedfromplayer2 = fromPlayer2.readInt();
-                serverTextArea.append("boats placed from player1: " + boatsplacedfromplayer1+ '\n');
-                serverTextArea.append("boats placed from player2: " + boatsplacedfromplayer2+ '\n');
+
+
 
                 if (boatsplacedfromplayer1 == PLAYER1_BOATS_PLACED && boatsplacedfromplayer2 == PLAYER2_BOATS_PLACED)
                 {
+                    serverTextArea.append("player 1 and player 2 succesfully placed their boats" + '\n');
                     toPlayer1.writeInt(START_GAME);
                     toPlayer2.writeInt(START_GAME);
+                    serverTextArea.append("wrote to player1 and player2 that the game can start" + '\n');
                     while (true) {
+                        serverTextArea.append("we have now entered the while true loop" + '\n' + '\n');
+
                         int row = fromPlayer1.readInt();
                         int column = fromPlayer1.readInt();
                         boatsHit = fromPlayer1.readInt();
 
+                        serverTextArea.append("succesfully read the row, column and amount of boats hit from player1:" + '\n');
                         serverTextArea.append("row from player1: " + row+ '\n');
                         serverTextArea.append("column from player1: " + column+ '\n');
-                        serverTextArea.append("boats hit from player1: " + boatsHit+ '\n');
+                        serverTextArea.append("boats hit from player1: " + boatsHit+ '\n' + '\n');
 
-                        if (isThereAWinner()) {
-                            serverTextArea.append("is there a winner yet? : " + isThereAWinner()+ '\n');
-                            toPlayer1.writeInt(PLAYER1_WON);
-                            toPlayer2.writeInt(PLAYER1_WON);
-                            sendMove(toPlayer2, row, column);
+                        serverTextArea.append("now checking if the first data send from client == player1_won or player2_won" + '\n');
+                        if (row == PLAYER1_WON || row == PLAYER2_WON) {
+                            sendMove(toPlayer2, row, column, boatsHit);
                             break;
                         } else {
-                            sendMove(toPlayer2, row, column);
-                            serverTextArea.append("move send to player2:  row:" + row + " column: " + column+ '\n');
+                            serverTextArea.append("no player has won yet, now sending the row column and amount of boats hit to player 2:" + '\n');
+                            sendMove(toPlayer2, row, column, boatsHit);
+                            serverTextArea.append("succesfully send the row, column and amount of boats hit to player 2" + '\n' + '\n');
                         }
 
 
@@ -119,47 +124,36 @@ public class SeabattleServer extends JFrame{
                         column = fromPlayer2.readInt();
                         boatsHit = fromPlayer2.readInt();
 
+                        serverTextArea.append("succesfully read the row, column and amount of boats hit from player2:" + '\n');
                         serverTextArea.append("row from player2: " + row+ '\n');
                         serverTextArea.append("column from player2: " + column+ '\n');
-                        serverTextArea.append("boats hit from player2: " + boatsHit+ '\n');
+                        serverTextArea.append("boats hit from player2: " + boatsHit+ '\n' + '\n');
 
-                        if (isThereAWinner()) {
-                            serverTextArea.append("is there a winner yet? : " + isThereAWinner()+ '\n');
+                        serverTextArea.append("now checking if the first data send from client == player1_won or player2_won" + '\n');
+                        if (row == PLAYER1_WON || row == PLAYER2_WON) {
                             toPlayer1.writeInt(PLAYER2_WON);
                             toPlayer2.writeInt(PLAYER2_WON);
-                            sendMove(toPlayer1, row, column);
+                            sendMove(toPlayer1, row, column, boatsHit);
                             break;
                         } else {
-                            sendMove(toPlayer1, row, column);
-                            serverTextArea.append("move send to player1:  row:" + row + " column: " + column+ '\n');
+                            serverTextArea.append("no player has won yet, now sending the row column and amount of boats hit to player 1:" + '\n');
+                            sendMove(toPlayer1, row, column, boatsHit);
+                            serverTextArea.append("succesfully send the row, column and amount of boats hit to player 1" + '\n' + '\n');
                         }
                     }
                 }
-
 
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
         }
 
-            private boolean isThereAWinner()
-            {
-                boolean aWinner;
-                if (boatsHit == 5)
-                {
-                    aWinner = true;
-                }else
-                {
-                    aWinner = false;
-                }
-                return aWinner;
-            }
-
-            private void sendMove(DataOutputStream outputStream, int row, int column)
+            private void sendMove(DataOutputStream outputStream, int row, int column, int boatshit)
             {
                 try {
                     outputStream.writeInt(row);
                     outputStream.writeInt(column);
+                    outputStream.writeInt(boatshit);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
