@@ -117,6 +117,7 @@ public class TicTacToeClient extends JFrame implements Runnable, SeabattleDataSt
 
                 final int finalLeftX = leftX;
                 final int finalLeftY = leftY;
+                
 
                 leftButton.addActionListener(e ->
                 {
