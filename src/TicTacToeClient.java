@@ -33,7 +33,6 @@ public class TicTacToeClient extends JFrame implements Runnable, SeabattleDataSt
 
     private static int selectedRow = 0;
     private static int selectedColumn = 0;
-    private static JButton lastClickedJButton;
 
 
     private static boolean noWinnerFound = true;
@@ -202,9 +201,7 @@ public class TicTacToeClient extends JFrame implements Runnable, SeabattleDataSt
                     buttonclicked = true;
                     rightButton.setBackground(Color.white);
                     rightButton.setEnabled(false);
-                    lastClickedJButton = rightPlayFieldButtons.get(selectedColumn).get(selectedRow);
-                    
-                    //huidigeAchtergrond = rightButton.getBackground();
+                    huidigeAchtergrond = rightButton.getBackground();
                     //rightButton.setEnabled(false);
                 });
 
@@ -239,7 +236,8 @@ public class TicTacToeClient extends JFrame implements Runnable, SeabattleDataSt
     private void connectToServer() {
         try {
             Socket socket;
-            socket = new Socket("2001:610:1a0:1300:99f2:46f4:e0b1:d5d1", 8000);
+            socket = new Socket(host, 8000);
+            //socket = new Socket("2001:610:1a0:1300:99f2:46f4:e0b1:d5d1", 8000);
             fromServer = new DataInputStream(socket.getInputStream());
             toServer = new DataOutputStream(socket.getOutputStream());
         }
@@ -344,11 +342,14 @@ public class TicTacToeClient extends JFrame implements Runnable, SeabattleDataSt
         try {
             receiveMove();
             JButton target = leftPlayFieldButtons.get(enemyColumn).get(enemyRow);
+            JButton button = rightPlayFieldButtons.get(selectedColumn).get(selectedRow);
             if (boats.contains(target)) {
                 isHit = true;
+                button.setBackground(boathitColor);
             }
             else {
                 isHit = false;
+                button.setBackground(hitmisWater);
             }
         } catch (IOException e) {
             e.printStackTrace();
