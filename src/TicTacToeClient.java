@@ -27,9 +27,14 @@ public class TicTacToeClient extends JFrame implements Runnable, SeabattleDataSt
 
     private static Color water = new Color(51, 190, 212);
     private static Color hoverWater = new Color(61,209, 232);
+    private static Color hitmisWater = new Color(4, 0, 255);
+    private static Color boathitColor = new Color(232, 130, 181);
+
 
     private static int selectedRow = 0;
     private static int selectedColumn = 0;
+    private static JButton lastClickedJButton;
+
 
     private static boolean noWinnerFound = true;
 
@@ -184,6 +189,10 @@ public class TicTacToeClient extends JFrame implements Runnable, SeabattleDataSt
                     }
                     public void mouseExited(java.awt.event.MouseEvent evt) {
                         rightButton.setBackground(huidigeAchtergrond);
+                        rightButton.setBackground(Color.white);
+                        rightButton.setEnabled(false);
+                        lastClickedJButton = rightPlayFieldButtons.get(selectedColumn).get(selectedRow);
+                        //huidigeAchtergrond = rightButton.getBackground();
 
                     }
                 });
@@ -230,7 +239,7 @@ public class TicTacToeClient extends JFrame implements Runnable, SeabattleDataSt
     private void connectToServer() {
         try {
             Socket socket;
-            socket = new Socket(host, 8000);
+            socket = new Socket("2001:610:1a0:1300:99f2:46f4:e0b1:d5d1", 8000);
             fromServer = new DataInputStream(socket.getInputStream());
             toServer = new DataOutputStream(socket.getOutputStream());
         }
