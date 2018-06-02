@@ -1,14 +1,14 @@
 import java.util.ArrayList;
 
-public class RecursieVoorbeeld {
+public class RecursionExample {
 
     ArrayList<Integer> ints = new ArrayList();
 
     public static void main(String[] args){
-        new RecursieVoorbeeld();
+        new RecursionExample();
     }
 
-    RecursieVoorbeeld() {
+    RecursionExample() {
         containsNumber(1);
         containsNumber(5);
         containsNumber(6);
