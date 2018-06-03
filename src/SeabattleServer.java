@@ -98,6 +98,10 @@ public class SeabattleServer extends JFrame{
                     while (true) {
                         serverTextArea.append("we have now entered the while true loop" + '\n' + '\n');
 
+                        int statuss = fromPlayer1.readInt();
+
+                        toPlayer2.writeInt(statuss);
+
                         int status = fromPlayer1.readInt();
                         int row = fromPlayer1.readInt();
                         int column = fromPlayer1.readInt();
@@ -138,6 +142,8 @@ public class SeabattleServer extends JFrame{
                         column = fromPlayer2.readInt();
                         boatsHit = fromPlayer2.readInt();
 
+                        statuss = fromPlayer2.readInt();
+
 
                         serverTextArea.append("succesfully read the row, column and amount of boats hit from player2:" + '\n');
                         serverTextArea.append("row from player2: " + row+ '\n');
@@ -153,6 +159,8 @@ public class SeabattleServer extends JFrame{
                         {
                             sendMove(toPlayer1,status, row, column, boatsHit);
                         }
+
+                        toPlayer1.writeInt(statuss);
 
 //                        serverTextArea.append("now checking if the first data send from client == player1_won or player2_won" + '\n');
 //                        if (status == PLAYER1_WON || status == PLAYER2_WON) {

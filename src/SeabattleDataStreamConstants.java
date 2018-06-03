@@ -1,6 +1,6 @@
 public interface SeabattleDataStreamConstants {
 
-    //omdat we natuurlijk coordinaten sturen moeten we getallen gebruiken die niet als coordinaat verstuurd worden
+    //omdat we natuurlijk coordinaten sturen moeten we getallen gebruiken die niet als coordinaat verstuurd wordenr
 
     public static int PLAYER1 = 111;
     public static int PLAYER2 = 222;
