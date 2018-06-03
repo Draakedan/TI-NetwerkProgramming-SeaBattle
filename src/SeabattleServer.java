@@ -10,6 +10,7 @@ import java.util.Date;
 public class SeabattleServer extends JFrame{
 
     JTextArea serverTextArea;
+    private static int status = 0;
 
     public static void main(String[] args) {
         SeabattleServer seabattleServer = new SeabattleServer();
@@ -98,11 +99,11 @@ public class SeabattleServer extends JFrame{
                     while (true) {
                         serverTextArea.append("we have now entered the while true loop" + '\n' + '\n');
 
-                        int statuss = fromPlayer1.readInt();
 
-                        toPlayer2.writeInt(statuss);
+                        toPlayer2.writeInt(status);
+                        toPlayer1.writeInt(status);
 
-                        int status = fromPlayer1.readInt();
+                        status = fromPlayer1.readInt();
                         int row = fromPlayer1.readInt();
                         int column = fromPlayer1.readInt();
                         int boatsHit = fromPlayer1.readInt();
@@ -113,6 +114,8 @@ public class SeabattleServer extends JFrame{
                         serverTextArea.append("column from player1: " + column+ '\n');
                         serverTextArea.append("boats hit from player1: " + boatsHit+ '\n' + '\n');
 
+                        toPlayer1.writeInt(status);
+
                         if (boatsHit == 5)
                         {
                             status = PLAYER2_WON;
@@ -122,6 +125,8 @@ public class SeabattleServer extends JFrame{
                         {
                             sendMove(toPlayer2, status, row, column, boatsHit);
                         }
+
+                        toPlayer2.writeInt(status);
 
 
 
@@ -142,8 +147,7 @@ public class SeabattleServer extends JFrame{
                         column = fromPlayer2.readInt();
                         boatsHit = fromPlayer2.readInt();
 
-                        statuss = fromPlayer2.readInt();
-
+                        toPlayer2.writeInt(status);
 
                         serverTextArea.append("succesfully read the row, column and amount of boats hit from player2:" + '\n');
                         serverTextArea.append("row from player2: " + row+ '\n');
@@ -160,7 +164,7 @@ public class SeabattleServer extends JFrame{
                             sendMove(toPlayer1,status, row, column, boatsHit);
                         }
 
-                        toPlayer1.writeInt(statuss);
+                        toPlayer1.writeInt(status);
 
 //                        serverTextArea.append("now checking if the first data send from client == player1_won or player2_won" + '\n');
 //                        if (status == PLAYER1_WON || status == PLAYER2_WON) {

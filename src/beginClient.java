@@ -219,7 +219,7 @@ public class beginClient extends JFrame implements Runnable, SeabattleDataStream
         startButton.addActionListener(e ->
         {
             startButton.setVisible(false);
-            topFieldText.setText("U mag nu 5 schepen neer zetten");
+            topFieldText.setText("You may place 5 boats on the left field");
             topFieldText.setVisible(true);
             isStartPressed = true;
         });
@@ -282,9 +282,10 @@ public class beginClient extends JFrame implements Runnable, SeabattleDataStream
                                             rightPlayField.setEnabled(true);
                         waitForPlayerAction();
                                             rightPlayField.setEnabled(false);
-                                            sendStatus();
+                                            revieveStatus();
                         sendMoveServer();
                                             topFieldText.setText("wait for the other player to shoot");
+                                            revieveStatus();
                         receiveFromServer();
                         revieveStatus();
                         isThereAWinner();
@@ -318,12 +319,13 @@ public class beginClient extends JFrame implements Runnable, SeabattleDataStream
                                             rightPlayField.setEnabled(false);
                                             revieveStatus();
                         receiveFromServer();
+                        revieveStatus();
                         isThereAWinner();
                                             topFieldText.setText("its your turn to shoot");
                                             rightPlayField.setEnabled(true);
                         waitForPlayerAction();
                         sendMoveServer();
-                        sendStatus();
+                        revieveStatus();
                                             topFieldText.setText("wait for the other player to shoot");
                                             rightPlayField.setEnabled(false);
                         if (status == PLAYER1_WON){
@@ -365,6 +367,10 @@ public class beginClient extends JFrame implements Runnable, SeabattleDataStream
 
     private void revieveStatus() throws IOException {
         status = fromServer.readInt();
+        if (status == PLAYER1_WON)
+            topFieldText.setText("Player 1 has won");
+        else if (status == PLAYER2_WON)
+            topFieldText.setText("Player 2 has won");
     }
 
     private void sendMoveServer() throws IOException {
