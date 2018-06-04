@@ -17,7 +17,7 @@ public class SeaBattleClient extends JFrame implements Runnable, SeabattleDataSt
     private static int boatsPlaced = 0;
     private static int boatsHit = 0;
     private static int boatsHitFromEnemy = 0;
-    private static int currentBoatsHitFromEnemy = 0;
+    private static int currrentBoatsHitFromEnemy = 0;
 
     private static boolean buttonclicked = false;
     private static boolean isStartPressed = false;
@@ -27,17 +27,8 @@ public class SeaBattleClient extends JFrame implements Runnable, SeabattleDataSt
 
     private static Color water = new Color(51, 190, 212);
     private static Color hoverWater = new Color(61,209, 232);
-
-    private static Color hitmisWater = new Color(73, 99, 255);
-    private static Color hoverHitmisWater = new Color(106, 130, 255);
-
+    private static Color boatMisWater = new Color(73, 99, 255);
     private static Color boathitColor = new Color(232, 1, 0);
-    private static Color hoverBoathitColor = new Color(255, 79, 72);
-
-    private static Color boat = new Color(255, 253, 0);
-    private static Color hoverBoat = new Color(255, 254, 110);
-
-    private static Color waitForResponseColor = new Color(197, 210, 255);
 
 
     private static int selectedRow = 0;
@@ -57,25 +48,27 @@ public class SeaBattleClient extends JFrame implements Runnable, SeabattleDataSt
     private Panel centerArea;
     private Panel rightPlayField;
 
-    private String host = "localhost";
+    //private String host = "localhost";
+    private String host = "2001:610:1a0:1300:d74:7653:d8e2:5773";
 
     public SeaBattleClient(){
-        JFrame frame = new JFrame("Gui oefenen Timo");
+        JFrame frame = new JFrame("Network SeaBattle");
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.setMinimumSize(new Dimension(1000, 400));
         frame.setExtendedState(MAXIMIZED_BOTH);
 
-        //dit is het paneel waar alle andere layouts/panelen op komen
+
+        //this is the panel that is going to contain all other layouts and panels.
         JPanel mainPanel = new JPanel();
 
-        //dit zijn de 3 panelen die op het mainPanel komen
+        //these are the 3 panels for the mainPanel.
         topField = new Panel();
         leftPlayField = new Panel();
         centerArea = new Panel();
         rightPlayField = new Panel();
 
 
-        //hier worden de 3 panelen als borderlayout gezet, zodat er meerdere dingen aan het paneel toegevoegd kunnen worden
+        //the 3 panels are set as borderlayout here, so that multiple elements can be added to the panel
         topField.setLayout(new FlowLayout());
         leftPlayField.setLayout(new BorderLayout());
         centerArea.setLayout(new BorderLayout());
@@ -87,9 +80,7 @@ public class SeaBattleClient extends JFrame implements Runnable, SeabattleDataSt
         mainPanel.add(rightPlayField);
 
 
-        //door middel van een gridBagLayout, kan je alle grotes aanpassen naar eigen wens,
-        //dit zorgt er voor dat je precies kan bepalen waar elk paneel komt te staan, en welke grote
-        //ook kan je makkelijk een paneel toevoegen zonder veel te hoeven veranderen
+
         GridBagLayout gridBagLayout = new GridBagLayout();
         makeConstraints(gridBagLayout, topField, 1, 1, 0, 0, 1.0, 0.1);
         makeConstraints(gridBagLayout, leftPlayField, 1, 1, 0, 1, 5.0, 10.0);
@@ -99,8 +90,6 @@ public class SeaBattleClient extends JFrame implements Runnable, SeabattleDataSt
         centerArea.add(new JLabel("middenVeld"));
 
 
-//hier staan 2 codes om het speelveld te maken, deze komen uit johans oefentoest van lightsout van periode 2
-        //we moeten kijken of we een aparte methode gaan schrijven om dit toe te voegen of het anders doen
 
         JPanel leftPlayerGameField = new JPanel(new GridLayout(5,5));
         leftPlayField.add(leftPlayerGameField, BorderLayout.CENTER);
@@ -119,15 +108,8 @@ public class SeaBattleClient extends JFrame implements Runnable, SeabattleDataSt
                         currentBackground = leftButton.getBackground();
                         if (leftButton.getBackground().equals(water)) {
                             leftButton.setBackground(hoverWater);
-                        }
-                        else if (leftButton.getBackground().equals(boat)){
-                            leftButton.setBackground(hoverBoat);
-                        }
-                        else if (leftButton.getBackground().equals(hitmisWater)){
-                            leftButton.setBackground(hoverHitmisWater);
-                        }
-                        else if (leftButton.getBackground().equals(boathitColor)){
-                            leftButton.setBackground(hoverBoathitColor);
+                        }else{
+                            leftButton.setBackground(Color.black);
                         }
                     }
                     public void mouseExited(java.awt.event.MouseEvent evt) {
@@ -138,14 +120,14 @@ public class SeaBattleClient extends JFrame implements Runnable, SeabattleDataSt
 
                 final int finalLeftX = leftX;
                 final int finalLeftY = leftY;
-
+                
 
                 leftButton.addActionListener(e ->
                 {
                     if (isStartPressed)
                     {
                         if (boatsPlaced < 5) {
-                            leftButton.setBackground(boat);
+                            leftButton.setBackground(Color.YELLOW);
                             currentBackground = leftButton.getBackground();
                             leftButton.setEnabled(false);
                             boatsPlaced++;
@@ -197,6 +179,8 @@ public class SeaBattleClient extends JFrame implements Runnable, SeabattleDataSt
                         currentBackground = rightButton.getBackground();
                         if (rightButton.getBackground().equals(water)) {
                             rightButton.setBackground(hoverWater);
+                        }else{
+                            rightButton.setBackground(Color.black);
                         }
 
                     }
@@ -213,8 +197,10 @@ public class SeaBattleClient extends JFrame implements Runnable, SeabattleDataSt
                     selectedRow = finalRightX;
                     selectedColumn = finalRightY;
                     buttonclicked = true;
-                    rightButton.setBackground(waitForResponseColor);
+                    rightButton.setBackground(Color.white);
                     rightButton.setEnabled(false);
+                    currentBackground = rightButton.getBackground();
+                    //rightButton.setEnabled(false);
                 });
 
 
@@ -266,59 +252,92 @@ public class SeaBattleClient extends JFrame implements Runnable, SeabattleDataSt
 
             player = fromServer.readInt();
             System.out.println("the server send me what player i am, and i am player:" + player);
-
             int canTheGameStart = fromServer.readInt();
             if (canTheGameStart == START_GAME) {
                 System.out.println("both players have succesfully placed their boats:");
+                status = CONTINUE;
                 while (noWinnerFound) {
                     System.out.println("we have now entered the while there is no winner found loop");
                     System.out.println("the amount of boats that are hit is: " + boatsHit);
 
                     if (player == PLAYER1) {
-                        if (boatsHit == 5)
-                            status = PLAYER1_WON;
-                        topFieldText.setText("its your turn to shoot");
-                        rightPlayField.setEnabled(true);
-                        waitForPlayerAction();
-                        rightPlayField.setEnabled(false);
-                        //isThereAWinner();
-                        sendMoveServer();
-                        topFieldText.setText("wait for the other player to shoot");
-                        receiveFromServer();
-                        //isThereAWinner();
+                        isThereAWinner();
                         if (status == PLAYER1_WON){
-                            topFieldText.setText("You have won!!");
-                            rightPlayField.setEnabled(false);
-                        } else if (status == PLAYER2_WON) {
-
                             topFieldText.setText("You have lost...");
                             rightPlayField.setEnabled(false);
+                            break;
+                        } else if (status == PLAYER2_WON) {
+
+                            topFieldText.setText("You have won!!");
+                            rightPlayField.setEnabled(false);
+                            break;
+                        }
+                        if (boatsHit == 5) {
+                            status = PLAYER1_WON;
+                            break;
+                        }
+                                            topFieldText.setText("its your turn to shoot");
+                                            rightPlayField.setEnabled(true);
+                        waitForPlayerAction();
+                                            rightPlayField.setEnabled(false);
+                                            revieveStatus();
+                        sendMoveServer();
+                                            topFieldText.setText("wait for the other player to shoot");
+                                            revieveStatus();
+                        receiveFromServer();
+                        revieveStatus();
+                        isThereAWinner();
+                        if (status == PLAYER1_WON){
+                            topFieldText.setText("You have lost...");
+                            rightPlayField.setEnabled(false);
+                            break;
+                        } else if (status == PLAYER2_WON) {
+
+                            topFieldText.setText("You have won!!");
+                            rightPlayField.setEnabled(false);
+                            break;
                         }
 
                     } else if (player == PLAYER2) {
-                        if (boatsHit == 5)
-                            status = PLAYER2_WON;
-                        topFieldText.setText("wait for the other player to shoot");
-                        rightPlayField.setEnabled(false);
-                        receiveFromServer();
-                        //isThereAWinner();
-                        topFieldText.setText("its your turn to shoot");
-                        rightPlayField.setEnabled(true);
-                        waitForPlayerAction();
-                        //isThereAWinner();
-                        sendMoveServer();
-                        topFieldText.setText("wait for the other player to shoot");
-                        rightPlayField.setEnabled(false);
+                        isThereAWinner();
                         if (status == PLAYER1_WON){
-                            topFieldText.setText("You have lost...");
-                            rightPlayField.setEnabled(false);
-                        } else if (status == PLAYER2_WON){
                             topFieldText.setText("You have won!!");
                             rightPlayField.setEnabled(false);
+                            break;
+                        } else if (status == PLAYER2_WON){
+                            topFieldText.setText("You have lost...");
+                            rightPlayField.setEnabled(false);
+                            break;
                         }
+                        if (boatsHit == 5) {
+                            status = PLAYER2_WON;
+                            break;
+                        }
+                                            topFieldText.setText("wait for the other player to shoot");
+                                            rightPlayField.setEnabled(false);
+                                            revieveStatus();
+                        receiveFromServer();
+                        revieveStatus();
+                        isThereAWinner();
+                                            topFieldText.setText("its your turn to shoot");
+                                            rightPlayField.setEnabled(true);
+                        waitForPlayerAction();
+                        sendMoveServer();
+                        revieveStatus();
+                                            topFieldText.setText("wait for the other player to shoot");
+                                            rightPlayField.setEnabled(false);
+                        if (status == PLAYER1_WON){
+                            topFieldText.setText("You have won!!");
+                            rightPlayField.setEnabled(false);
+                            break;
+                        } else if (status == PLAYER2_WON){
+                            topFieldText.setText("You have lost...");
+                            rightPlayField.setEnabled(false);
+                            break;
+                        }
+
                     }
                 }
-
             }
 
         } catch (IOException e) {
@@ -340,13 +359,25 @@ public class SeaBattleClient extends JFrame implements Runnable, SeabattleDataSt
         buttonclicked = false;
     }
 
+    private void sendStatus() throws IOException {
+        toServer.writeInt(status);
+    }
+
+    private void revieveStatus() throws IOException {
+        status = fromServer.readInt();
+        if (status == PLAYER1_WON)
+            topFieldText.setText("Player 1 has won");
+        else if (status == PLAYER2_WON)
+            topFieldText.setText("Player 2 has won");
+    }
+
     private void sendMoveServer() throws IOException {
         System.out.println("now entering sendMoveServer()");
-        toServer.writeInt(status);
-        toServer.writeInt(selectedRow);
-        toServer.writeInt(selectedColumn);
+        System.out.println("status: "+ status);
+        toServer.writeInt(selectedRow);//row
+        toServer.writeInt(selectedColumn);//column
         toServer.writeInt(boatsHit);
-
+        toServer.writeInt(status);
         System.out.println("row send to the server: " + selectedRow);
         System.out.println("column send to the server: " + selectedColumn);
         System.out.println("amount of boats that has been hit send to the server:" + boatsHit);
@@ -357,7 +388,7 @@ public class SeaBattleClient extends JFrame implements Runnable, SeabattleDataSt
     private void receiveFromServer() throws IOException
     {
         System.out.println("now entering receiveFromServer()");
-        changeButton();
+            changeButton();
         System.out.println("now exiting receiveFromServer");
 
     }
@@ -367,12 +398,10 @@ public class SeaBattleClient extends JFrame implements Runnable, SeabattleDataSt
 
     private void receiveMove() throws IOException {
         System.out.println("now entering receiveMove()");
-            status = fromServer.readInt();
-            enemyRow = fromServer.readInt();
-            enemyColumn = fromServer.readInt();
-            boatsHitFromEnemy = fromServer.readInt();
-
-
+        enemyRow = fromServer.readInt();
+        enemyColumn = fromServer.readInt();
+        boatsHitFromEnemy = fromServer.readInt();
+        status = fromServer.readInt();
         System.out.println("row read from the server: " + enemyRow);
         System.out.println("column: read from the server" + enemyColumn);
         System.out.println("boats hit from the enemy read from the server:" + boatsHitFromEnemy);
@@ -385,7 +414,6 @@ public class SeaBattleClient extends JFrame implements Runnable, SeabattleDataSt
             JButton target = leftPlayFieldButtons.get(enemyColumn).get(enemyRow);
             if (boats.contains(target)) {
                 isHit = true;
-                boatsHit ++;
             }
             else {
                 isHit = false;
@@ -393,20 +421,12 @@ public class SeaBattleClient extends JFrame implements Runnable, SeabattleDataSt
         } catch (IOException e) {
             e.printStackTrace();
         }
-        if (boatsHit >= 5)
-        {
-            if (player == PLAYER1)
-                status = PLAYER1_WON;
-            else
-                status = PLAYER2_WON;
-        }
         return isHit;
     }
 
 
     private void changeButton()
     {
-
         System.out.println("now entering changeButton()");
         System.out.println("we are checking if isHit() is true of false");
 
@@ -417,130 +437,72 @@ public class SeaBattleClient extends JFrame implements Runnable, SeabattleDataSt
         {
             System.out.println("isHit() == true");
             boatsHit++;
-            if (testCounter == 0 && player == PLAYER2) {
-                button.setBackground(boathitColor);
+            if (testCounter == 0 && player == PLAYER2)
+            {
                 target.setBackground(boathitColor);
-            }
-            else {
+            }else {
+                //button.setBackground(boathitColor);
                 target.setBackground(boathitColor);
             }
         }
         if (isThereABoatHit == false) {
             System.out.println("isHit() == false");
             if (testCounter == 0 && player == PLAYER2) {
-                target.setBackground(hitmisWater);
+                target.setBackground(boatMisWater);
             } else {
-                button.setBackground(hitmisWater);
-                target.setBackground(hitmisWater);
+                button.setBackground(boatMisWater);
+                target.setBackground(boatMisWater);
             }
         }
-        if (currentBoatsHitFromEnemy != boatsHitFromEnemy)
+        if (currrentBoatsHitFromEnemy != boatsHitFromEnemy)
         {
             button.setBackground(boathitColor);
-        }else if (currentBoatsHitFromEnemy == boatsHitFromEnemy)
+        }else if (currrentBoatsHitFromEnemy == boatsHitFromEnemy)
         {
             if (testCounter != 0 && player == PLAYER2)
-                button.setBackground(hitmisWater);
+            button.setBackground(boatMisWater);
             if (testCounter !=0 && player == PLAYER1)
-                button.setBackground(hitmisWater);
+                button.setBackground(boatMisWater);
         }
 
-        currentBoatsHitFromEnemy = boatsHitFromEnemy;
-        //checkForWinner();
-
+        currrentBoatsHitFromEnemy = boatsHitFromEnemy;
         System.out.println("now exiting changeButton()");
         System.out.println("");
         testCounter++;
     }
-//private boolean checkForWinner()
-//{
-//boolean thereIsAWinner = false;
-//    if (status == PLAYER1_WON && player == PLAYER1)
-//    {
-//        topFieldText.setText("je hebt gewonnen!!!");
-//        thereIsAWinner = true;
-//        noWinnerFound = false;
-//    }else if (status == PLAYER1_WON && player == PLAYER2)
-//    {
-//        topFieldText.setText("helaas :( je hebt verloren");
-//        thereIsAWinner = true;
-//        noWinnerFound = false;
-//    }else if (status == PLAYER2_WON && player == PLAYER2)
-//    {
-//        topFieldText.setText("je hebt gewonnen!!!");
-//        thereIsAWinner = true;
-//        noWinnerFound = false;
-//    }else if (status == PLAYER2_WON && player == PLAYER1)
-//    {
-//        topFieldText.setText("helaas :( je hebt verloren");
-//        thereIsAWinner = true;
-//        noWinnerFound = false;
-//    }
-//    return thereIsAWinner;
-//}
 
-//private boolean checkStatus()
-//{
-//    boolean thereIsAWinner = false;
-//    if (status == PLAYER1_WON && player == PLAYER1)
-//    {
-//        topFieldText.setText("je hebt gewonnen!!!");
-//        thereIsAWinner = true;
-//        noWinnerFound = false;
-//    }else if (status == PLAYER1_WON && player == PLAYER2)
-//    {
-//        topFieldText.setText("helaas :( je hebt verloren");
-//        thereIsAWinner = true;
-//        noWinnerFound = false;
-//    }else if (status == PLAYER2_WON && player == PLAYER2)
-//    {
-//        topFieldText.setText("je hebt gewonnen!!!");
-//        thereIsAWinner = true;
-//        noWinnerFound = false;
-//    }else if (status == PLAYER2_WON && player == PLAYER1)
-//    {
-//        topFieldText.setText("helaas :( je hebt verloren");
-//        thereIsAWinner = true;
-//        noWinnerFound = false;
-//    }
-//    return thereIsAWinner;
-//}
+    private void isThereAWinner() {
+        System.out.println("now entering isThereAWinner()");
+        if (boatsHitFromEnemy >= 5) {
+            if (player == PLAYER1) {
+                System.out.println("boatsHitFromEnemy == 5");
+                topFieldText.setText("You have won the game!");
+                //toServer.writeInt(PLAYER2_WON);
+                status = PLAYER2_WON;
 
-//    private void isThereAWinner() {
-//        System.out.println("now entering isThereAWinner()");
-//        System.out.println("NOW CHECKING IF THE BOATS FROM THE ENEMY ARE 5");
-//        if (boatsHitFromEnemy == 5) {
-//            System.out.println("THEY ARE NOW");
-//            if (player == PLAYER1) {
-//                System.out.println("boatsHitFromEnemy == 5");
-//                topFieldText.setText("You have won the game!");
-//                //toServer.writeInt(PLAYER2_WON);
-//                status = PLAYER1_WON;
-//
-//            } else if (player == PLAYER2) {
-//                topFieldText.setText("Your opponent won the game :(");
-//                //toServer.writeInt(PLAYER1_WON);
-//                status = PLAYER2_WON;
-//
-//                noWinnerFound = false;
-//            }
-//            if (boatsHit == 5) {
-//                if (player == PLAYER1) {
-//                    topFieldText.setText("Player1 has won the game :(");
-//                    //toServer.writeInt(PLAYER1_WON);
-//                    status = PLAYER2_WON;
-//
-//                } else if (player == PLAYER2) {
-//                    topFieldText.setText("player2 has won the game");
-//
-//                    //toServer.writeInt(PLAYER2_WON);
-//                    status = PLAYER1_WON;
-//
-//                    noWinnerFound = false;
-//                }
-//            }
-//        }
-//    }
+            } else if (player == PLAYER2) {
+                topFieldText.setText("Your opponent won the game :(");
+                //toServer.writeInt(PLAYER1_WON);
+                status = PLAYER1_WON;
+            }
+            noWinnerFound = false;
+        }
+            if (boatsHit >= 5) {
+                if (player == PLAYER1) {
+                    topFieldText.setText("Player1 has won the game :(");
+                    //toServer.writeInt(PLAYER1_WON);
+                    status = PLAYER1_WON;
+
+                } else if (player == PLAYER2) {
+                    topFieldText.setText("player2 has won the game");
+
+                    //toServer.writeInt(PLAYER2_WON);
+                    status = PLAYER2_WON;
+
+                }
+                noWinnerFound = false;
+            }
+        }
 
     /**
      * Generate constraints for Swing components
@@ -570,6 +532,6 @@ public class SeaBattleClient extends JFrame implements Runnable, SeabattleDataSt
 
     /** This main method enables the applet to run as an application */
     public static void main(String[] args) {
-        beginClient ticTacToeClient = new beginClient();
+    SeaBattleClient ticTacToeClient = new SeaBattleClient();
     }
 }
